@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Text, View } from 'react-native';
 import { useAudioPlayer} from 'expo-audio';
-import { encodeMorse } from './morse_util.js';
+import { encodeMorse, decodeMorse } from './morse_util.js';
 
 import * as Sharing from 'expo-sharing';
 
@@ -22,13 +22,18 @@ export default function App() {
   useEffect(() => {
     console.log("Generating Morse code for SOS");
     encodeMorse("Hallo Welt!").then((u) => {
-      setUri(u);
       console.log("Morse code URI:", u);
+      setUri(u);
     });
   }, []);
 
   useEffect(() => {
-    shareWavFile(uri);
+    if (!uri) return;
+    //shareWavFile(uri);
+    console.log("Decoding Morse code from URI:", uri);
+    decodeMorse(uri).then((text) => {
+      console.log("Decoded Morse text:", text);
+    });
   }, [uri])
 
   return (
