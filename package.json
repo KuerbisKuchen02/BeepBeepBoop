@@ -1,5 +1,5 @@
 {
-  "name": "beepbeepboop",
+  "name": "my-app",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -9,10 +9,16 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "base64-js": "^1.5.1",
     "expo": "~53.0.10",
+    "expo-audio": "~0.4.6",
+    "expo-file-system": "~18.1.10",
     "expo-status-bar": "~2.2.3",
+    "morse-pro": "^3.0.1",
     "react": "19.0.0",
-    "react-native": "0.79.3"
+    "react-native": "0.79.3",
+    "wav-file-encoder": "^1.0.4",
+    "expo-sharing": "~13.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
