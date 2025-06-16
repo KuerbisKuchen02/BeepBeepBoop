@@ -13,13 +13,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true  
+      "supportsTablet": true
     },
     "plugins": [
       [
-        "@siteed/expo-audio-studio", {
-          
-        }
+        "@siteed/expo-audio-studio",
+        {}
       ],
       [
         "expo-audio",
@@ -44,6 +43,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "39015012-f5fa-48fe-9aac-671162d793ad"
+      }
     }
   }
 }

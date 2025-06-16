@@ -3,6 +3,7 @@ import { Button, Text, TextInput, View } from 'react-native';
 import { Audio } from 'expo-av';
 import { useAudioRecorder, RecordingConfig } from '@siteed/expo-audio-studio'
 import { encodeMorse, decodeMorse } from './morse_util.js';
+import * as Sharing from 'expo-sharing';
 
 export default function App() {
   "use strict";
@@ -77,11 +78,22 @@ export default function App() {
     console.log('Recording saved:', recording.fileUri)
     decodeMorse(recording.fileUri).then((text) => {
       console.log("Decoded Morse text:", text);
+      shareWavFile(recording.fileUri);
     });
+  }
+
+  async function shareWavFile(uri) {
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (isAvailable) {
+      await Sharing.shareAsync(uri);
+    } else {
+      console.log("Sharing nicht verfügbar");
+    }
   }
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 20 }}>
+      <Text>BeepBeepBoop</Text>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
         <TextInput
           type="text"
