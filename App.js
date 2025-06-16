@@ -1,27 +1,12 @@
-import {
-  AudioRecording,
-  useAudioRecorder,
-  ExpoAudioStreamModule,
-  RecordingConfig
-} from '@siteed/expo-audio-studio'
-import { useAudioPlayer } from 'expo-audio'
-import { useState } from 'react'
-import { Button, StyleSheet, Text, View } from 'react-native'
-
-const STOP_BUTTON_COLOR = 'red'
-
-const styles = StyleSheet.create({
-  container: {
-      gap: 10,
-      margin: 40,
-      padding: 20,
-  },
-  stopButton: {
-      backgroundColor: 'red',
-  },
-})
+import React, { useState } from 'react';
+import { Button, Text, TextInput, View } from 'react-native';
+import { Audio } from 'expo-av';
+import { useAudioRecorder, RecordingConfig } from '@siteed/expo-audio-studio'
+import { encodeMorse, decodeMorse } from './morse_util.js';
 
 export default function App() {
+  "use strict";
+  const [encodeText, setEncodeText] = useState('');
   const {
     startRecording,
     stopRecording,
@@ -37,121 +22,96 @@ export default function App() {
     logger: console,
   })
 
-  const [audioResult, setAudioResult] = useState(null)
-  const player = useAudioPlayer(audioResult?.fileUri ?? "")
+  const handleEncodeMorse = async () => {
+    try {
+      const uri = await encodeMorse(encodeText)
+      const { sound } = await Audio.Sound.createAsync({ uri });
+      await sound.playAsync();
+    } catch (error) {
+      console.error('Error converting to morse:', error);
+    }
+  }
 
   const handleStart = async () => {
-    const { status } = await ExpoAudioStreamModule.requestPermissionsAsync()
-    if (status !== 'granted') {
-      return
-    }
+    const { granted } = await Audio.requestPermissionsAsync()
+    if (granted) {
+      const config = {
+        interval: 500, // Emit recording data every 500ms
+        enableProcessing: false, // Enable audio analysis
+        sampleRate: 44100, // Sample rate in Hz (16000, 44100, or 48000)
+        channels: 1, // Mono recording
+        encoding: 'pcm_16bit', // PCM encoding (pcm_8bit, pcm_16bit, pcm_32bit)
 
-    // Configure recording options
-    const config = {
-      interval: 500, // Emit recording data every 500ms
-      enableProcessing: true, // Enable audio analysis
-      sampleRate: 44100, // Sample rate in Hz (16000, 44100, or 48000)
-      channels: 1, // Mono recording
-      encoding: 'pcm_16bit', // PCM encoding (pcm_8bit, pcm_16bit, pcm_32bit)
-
-      // Optional: Configure audio output files
-      output: {
-        // Primary WAV file (enabled by default)
-        primary: {
-          enabled: true, // Set to false to disable WAV file creation
-        },
-        // Compressed file (disabled by default)
-        compressed: {
+        // Optional: Configure audio compression
+        compression: {
           enabled: false, // Set to true to enable compression
           format: 'aac', // 'aac' or 'opus'
-          bitrate: 128000, // Bitrate in bits per second
-        }
-      },
+          bitrate: 16000, // Bitrate in bits per second
+        },
 
-      // Optional: Handle audio stream data
-      onAudioStream: async (audioData) => {
-        console.log(`onAudioStream`, audioData)
-      },
+        // Optional: Handle audio stream data
+        onAudioStream: async (audioData) => {
+          // console.log(`onAudioStream`, audioData)
+        },
 
-      // Optional: Handle audio analysis data
-      onAudioAnalysis: async (analysisEvent) => {
-        console.log(`onAudioAnalysis`, analysisEvent)
-      },
+        // Optional: Handle audio analysis data
+        onAudioAnalysis: async (analysisEvent) => {
+          // console.log(`onAudioAnalysis`, analysisEvent)
+        },
 
-      // Optional: Handle recording interruptions
-      onRecordingInterrupted: (event) => {
-        console.log(`Recording interrupted: ${event.reason}`)
-      },
+        // Optional: Handle recording interruptions
+        onRecordingInterrupted: (event) => {
+          console.log(`Recording interrupted: ${event.reason}`)
+        },
 
-      // Optional: Auto-resume after interruption
-      autoResumeAfterInterruption: false,
+        // Optional: Auto-resume after interruption
+        autoResumeAfterInterruption: false,
+      }
 
-      // Optional: Audio focus strategy (Android only)
-      audioFocusStrategy: 'background', // 'background', 'interactive', 'communication', or 'none'
-
-      // Optional: Buffer duration control
-      bufferDurationSeconds: 0.1, // Buffer size in seconds
-      // Default: undefined (uses 1024 frames, but iOS enforces minimum 0.1s)
+      await startRecording(config)
     }
-
-    const startResult = await startRecording(config)
-    return startResult
   }
 
   const handleStop = async () => {
-    const result = await stopRecording()
-    setAudioResult(result)
+    const recording = await stopRecording()
+    console.log('Recording saved:', recording.fileUri)
+    decodeMorse(recording.fileUri).then((text) => {
+      console.log("Decoded Morse text:", text);
+    });
   }
-
-  const handlePlay = async () => {
-    if (player) {
-      player.play()
-    }
-  }
-  const renderRecording = () => (
-    <View style={styles.container}>
-      <Text>Duration: {durationMs / 1000} seconds</Text>
-      <Text>Size: {size} bytes</Text>
-      <Button title="Pause Recording" onPress={pauseRecording} />
-      <Button
-        title="Stop Recording"
-        onPress={handleStop}
-        color={STOP_BUTTON_COLOR}
-      />
-    </View>
-  )
-
-  const renderPaused = () => (
-    <View style={styles.container}>
-      <Text>Duration: {durationMs / 1000} seconds</Text>
-      <Text>Size: {size} bytes</Text>
-      <Button title="Resume Recording" onPress={resumeRecording} />
-      <Button
-        title="Stop Recording"
-        color={STOP_BUTTON_COLOR}
-        onPress={handleStop}
-      />
-    </View>
-  )
-
-  const renderStopped = () => (
-    <View style={styles.container}>
-      <Button title="Start Recording" onPress={handleStart} />
-      {audioResult && (
-        <View>
-          <Button title="Play Recording" onPress={handlePlay} />
-        </View>
-      )}
-    </View>
-  )
 
   return (
-    <>
-      {isRecording
-        ? renderRecording()
-        : isPaused
-          ? renderPaused()
-          : renderStopped()}
-    </>
-  )
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 20 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+        <TextInput
+          type="text"
+          placeholder="Enter text to encode in Morse"
+          onChangeText={setEncodeText}
+        />
+        <Button title='Encode and Play' onPress={handleEncodeMorse} />
+      </View>
+      <View>
+        <Button title="Request Permission" onPress={() => Audio.requestPermissionsAsync()} />
+        {isRecording ? (
+          <View>
+            <Text>Duration: {durationMs / 1000} seconds</Text>
+            <Text>Size: {size} bytes</Text>
+            <Button title="Pause Recording" onPress={pauseRecording} />
+            <Button title="Stop Recording" onPress={handleStop} />
+          </View>
+        ) : isPaused ? (
+          <View>
+            <Text>Duration: {durationMs / 1000} seconds (Paused)</Text>
+            <Text>Size: {size} bytes</Text>
+            <Button title="Resume Recording" onPress={resumeRecording} />
+            <Button title="Stop Recording" onPress={handleStop} />
+          </View>
+        ) : (
+          <View>
+            <Button title="Start Recording" onPress={handleStart} />
+          </View>
+        )}
+      </View>
+    </View>
+  );
 }

@@ -18,7 +18,7 @@ const WORD_GAP_LENGTH = DID_LENGTH * 7; // 700 ms for a word gap
 const SAMPLE_RATE = 44100; // Standard sample rate for audio
 const FREQUENCY = 440; // Frequency for the tone (A4)
 const VOLUME = 1; // Volume of the tone
-const THRESHOLD = 0.5; // Threshold for detecting sound in PCM data
+const THRESHOLD = 0.03; // Threshold for detecting sound in PCM data
 const NUMBER_OF_CHANNELS = 1; // Mono audio
 
 const INVERSE_MORSE = Object.fromEntries(
@@ -146,11 +146,22 @@ async function readWavPCM(uri) {
     const dataOffset = 44;
 
     const samples = (buffer.byteLength - dataOffset) / (bitsPerSample / 8);
-    const pcm = new Float32Array(samples);
 
-    for (let i = 0; i < samples; i++) {
-        const offset = dataOffset + i * 4;
-        pcm[i] = view.getFloat32(offset, true);
+    let pcm;
+    if (bitsPerSample === 16 && !isFloat) {
+        pcm = new Float32Array(samples);
+        for (let i = 0; i < samples; i++) {
+            const offset = dataOffset + i * 2;
+            pcm[i] = view.getInt16(offset, true) / 32768;
+        }
+    } else if (bitsPerSample === 32 && isFloat) {
+        pcm = new Float32Array(samples);
+        for (let i = 0; i < samples; i++) {
+            const offset = dataOffset + i * 4;
+            pcm[i] = view.getFloat32(offset, true);
+        }
+    } else {
+        throw new Error(`Unsupported WAV format: ${bitsPerSample} bits, float: ${isFloat}`);
     }
 
     return { pcm, sampleRate };
@@ -177,14 +188,14 @@ function foo(pcm, sampleRate, threshold = THRESHOLD, ditLength = DID_LENGTH) {
     for (let i = 0; i < pcm.length; i = i + dit + 1) {
         const window = pcm.slice(i, i + dit);
         const energy = window.reduce((sum, v) => sum + Math.abs(v), 0) / dit;
-        console.log("Energy: " + energy);
+        console.log("Block " + i/dit + " Energy: " + energy);
         blocks.push(energy > threshold ? true : false);
     }
 
     console.log("Blocks detected:", blocks.length, "with threshold:", threshold);
     let ditCounter = 1;
     let lastDitWasTone = blocks[0];
-    
+
     // Now go over the blocks and determine the morse code symbols
     for (let i = 1; i < blocks.length; i++) {
         console.log("Block", i, "is", blocks[i] ? "tone" : "silence", "with counter:", ditCounter, "last was tone:", lastDitWasTone);
@@ -192,8 +203,8 @@ function foo(pcm, sampleRate, threshold = THRESHOLD, ditLength = DID_LENGTH) {
         if (lastDitWasTone && blocks[i] || !lastDitWasTone && !blocks[i]) {
             ditCounter++;
             continue;
-        } 
-        
+        }
+
         if (lastDitWasTone) {
             if (ditCounter < 2) {  // Dits are 1 unit
                 result.push(".")
@@ -215,45 +226,59 @@ function foo(pcm, sampleRate, threshold = THRESHOLD, ditLength = DID_LENGTH) {
     return result;
 }
 
-function detectMorseFromPCM(pcm, sampleRate, threshold = 0.1, ditLength = 0.1) {
+function detectMorseFromPCM(pcm, sampleRate, ditLength = DID_LENGTH) {
+    // Calculate average energy across whole PCM
+    const energies = [];
     const unit = Math.floor(sampleRate * ditLength);
-    const result = [];
-
-    let i = 0;
-    console.log("PCM Length:", pcm.length, "Sample Rate:", sampleRate, "Unit Size:", unit);
-    while (i < pcm.length) {
+    for (let i = 0; i < pcm.length; i += unit) {
         const window = pcm.slice(i, i + unit);
         const energy = window.reduce((sum, v) => sum + Math.abs(v), 0) / unit;
-        console.log("Energy at i =", i, "is", energy);
-        if (energy > threshold) {
-            // tone on
-            let length = 0;
-            while (i + length < pcm.length && Math.abs(pcm[i + length]) > threshold) {
-                length++;
-            }
-            const duration = length / sampleRate;
-            if (duration < ditLength * 2) {
-                result.push('.');
-            }
-            else {
-                result.push('-');
-            }
-            i += length;
-        } else {
-            // silence
-            let length = 0;
-            while (i + length < pcm.length && Math.abs(pcm[i + length]) <= threshold) {
-                length++;
-            }
-            const duration = length / sampleRate;
-            if (duration >= ditLength * 6) result.push(' / ');        // word gap
-            else if (duration >= ditLength * 2.5) result.push(' ');   // letter gap
-            i += length;
-        }
+        energies.push(energy);
     }
-    console.log("Finished detectMorseFromPCM:", result.length);
-    return result.join('');
+    const avgEnergy = energies.reduce((a, b) => a + b, 0) / energies.length;
+    const dynamicThreshold = avgEnergy * 0.5;
+
+    const morse = [];
+    const states = [];
+
+    let i = 0;
+    const len = pcm.length;
+    const isAboveThreshold = v => Math.abs(v) > dynamicThreshold;
+
+    while (i < len) {
+        const isTone = isAboveThreshold(pcm[i]);
+        let count = 0;
+
+        while (
+            i + count < len &&
+            isAboveThreshold(pcm[i + count]) === isTone
+        ) {
+            count++;
+        }
+
+        const duration = count / sampleRate;
+
+        if (isTone) {
+            if (duration < ditLength * 1.5) {
+                morse.push('.');
+            } else {
+                morse.push('-');
+            }
+        } else {
+            if (duration >= ditLength * 6.5) {
+                morse.push(' / '); // word gap
+            } else if (duration >= ditLength * 2.5) {
+                morse.push(' '); // letter gap
+            }
+            // else it's just the pause between dots and dashes
+        }
+
+        i += count;
+    }
+
+    return morse.join('');
 }
+
 
 function morseToText(morse) {
     result = '';
@@ -280,14 +305,19 @@ function morseToText(morse) {
 }
 
 export async function decodeMorse(uri) {
-    console.log("Decoding Morse from URI:", uri);
-    const { pcm, sampleRate } = await readWavPCM(uri);
-    console.log("PCM Data Length:", pcm.length, "Sample Rate:", sampleRate);
-    const morse = foo(pcm, sampleRate);
-    console.log("Detected Morse:", morse);
-    const text = morseToText(morse);
-    console.log("Decoded Text:", text);
-    return text;
+    try {
+        console.log("Decoding Morse from URI:", uri);
+        const { pcm, sampleRate } = await readWavPCM(uri);
+        console.log("PCM Data Length:", pcm.length, "Sample Rate:", sampleRate);
+        const morse = foo(pcm, sampleRate);
+        console.log("Detected Morse:", morse);
+        const text = morseToText(morse);
+        console.log("Decoded Text:", text);
+        return text;
+    } catch (error) {
+        console.error("Error decoding Morse code:", error);
+        throw error; // Re-throw the error for further handling
+    }
 }
 
 // ***************************+++++++++++*********************************
