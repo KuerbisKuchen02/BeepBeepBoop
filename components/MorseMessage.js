@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
-import { Text, Button, View } from 'react-native';
+import { Text, Button, View, StyleSheet } from 'react-native';
 
 
-// Background color based on boolean isSendByMe? or changing to color prop?
+/**
+ * Parameters for the MorseMessage Component.
+ * String callsign: Callsign of the Sender, only when isSendByMe == false
+ * String uri: Filepath to the .wav file
+ * String text: Text of the message to display
+ * String morse: Message as Morse Code, only containing '.' and '-'
+ * String time: Time when message was send / recieved in format HH:MM
+ * Boolean: isSendByMe: Whether the Message was send (true) or recieved (false)
+ */
 const MorseMessage = ({callsign, uri, text, morse, time, isSendByMe})  => {
 
 const [isPlaying, setIsPlaying] = useState(false);
@@ -19,12 +27,12 @@ return (
     <View>
       <View style={isSendByMe ? styles.messageBox : [styles.messageBox, styles.messageBoxRetrieved]}>
         <View style={styles.mainContainer}>
-          <Text style={styles.callsign}>{callsign}</Text>
+          {!isSendByMe && <Text style={styles.callsign}>{callsign}</Text>}
           <Text style={styles.messageText}>{text}</Text>
           <Text style={styles.messageMorse}>{morse}</Text>
         </View>
         <View style={styles.secondContainer}>
-          <Button onPress={isPlaying ? stopReplayMessage : replayMessage} title="|>" style={isPlaying ? styles.stopReplayButton : styles.replayButton}></Button>
+          <Button onPress={isPlaying ? stopReplayMessage : replayMessage} title={isPlaying ? "||" : "|>"} style={isPlaying ? styles.stopReplayButton : styles.replayButton}></Button>
           <Text style={styles.time}>{time}</Text>
         </View>
       </View>
@@ -35,15 +43,17 @@ return (
 const styles = StyleSheet.create({
   messageBox: {
     alignSelf: 'flex-end',
+    maxWidth: '80%',
+    borderRadius: 25,
     flexDirection: 'row',
     backgroundColor: 'lightgreen',
     borderWidth: 3,
     borderColor: 'darkgray',
-    padding: 5,
+    padding: 10,
     gap: 5,
   },
   messageBoxRetrieved: {
-    alignSelf: 'felx-start',
+    alignSelf: 'flex-start',
     backgroundColor: 'mintcream',
   },
   mainContainer: {

@@ -19,7 +19,7 @@ export default function ChatComponent() {
                 uri: "https://example.com/audio1.mp3",
                 text: "Hello, this is a test message.",
                 morse: "... --- ...",
-                time: Date.now(),
+                time: "10:00",
                 isSendByMe: true,
             },
             {
@@ -27,7 +27,7 @@ export default function ChatComponent() {
                 uri: "https://example.com/audio2.mp3",
                 text: "Testing Morse code.",
                 morse: "- .... .. ... / .. ...",
-                time: Date.now() + 1000,
+                time: "10:00",
                 isSendByMe: false,
             },
             {
@@ -35,7 +35,7 @@ export default function ChatComponent() {
                 text: 'Hello, can you read me?',
                 morse: '.... . .-.. .-.. ---',
                 uri: null,
-                time: Date.now() - 60000,
+                time: "10:00",
                 isSendByMe: false,
             },
             {
@@ -43,7 +43,7 @@ export default function ChatComponent() {
                 text: 'Loud',
                 morse: '.-.. --- ..- -..',
                 uri: null,
-                time: Date.now() - 55000,
+                time: "10:00",
                 isSendByMe: true,
             },
             {
@@ -51,7 +51,7 @@ export default function ChatComponent() {
                 text: null,
                 morse: '-.-. -- ... / -.-. .... . -.-. -.-',
                 uri: null,
-                time: Date.now() - 50000,
+                time: "10:00",
                 isSendByMe: false,
             },
             {
@@ -59,7 +59,7 @@ export default function ChatComponent() {
                 text: 'Check this audio',
                 morse: '-.-. .... . -.-. -.- / .- ..- -.. .. ---',
                 uri: 'https://example.com/audio1.mp3',
-                time: Date.now() - 45000,
+                time: "10:00",
                 isSendByMe: true,
             },
             {
@@ -67,7 +67,7 @@ export default function ChatComponent() {
                 text: 'Loud',
                 morse: '.-.. --- ..- -..',
                 uri: null,
-                time: Date.now() - 55000,
+                time: "10:00",
                 isSendByMe: true,
             },
             {
@@ -75,7 +75,7 @@ export default function ChatComponent() {
                 text: null,
                 morse: '-.-. -- ... / -.-. .... . -.-. -.-',
                 uri: null,
-                time: Date.now() - 50000,
+                time: "10:00",
                 isSendByMe: false,
             },
             {
@@ -83,7 +83,7 @@ export default function ChatComponent() {
                 text: 'Check this audio',
                 morse: '-.-. .... . -.-. -.- / .- ..- -.. .. ---',
                 uri: 'https://example.com/audio1.mp3',
-                time: Date.now() - 45000,
+                time: "10:00",
                 isSendByMe: true,
             },
         ];
@@ -98,6 +98,7 @@ export default function ChatComponent() {
         <FlatList
             data={messages}
             keyExtractor={(item, index) => index.toString()}
+            contentContainerStyle={styles.chatContainer}
             renderItem={({ item }) => (
                 <MorseMessage
                     callsign={item.callsign}
@@ -118,8 +119,9 @@ const styles = StyleSheet.create({
     },
     chatContainer: {
         flexDirection: 'column',
-        gap: 10,
-        width: Dimensions.get("window").width,
+        justifyContent: 'space-between',
+        width: '100%',
         paddingHorizontal: 10,
+        gap: 10,
     },
 })
