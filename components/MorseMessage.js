@@ -3,7 +3,7 @@ import { Text, Button, View } from 'react-native';
 
 
 // Background color based on boolean isSendByMe? or changing to color prop?
-const MorseMessage = ({callsign, uri, text, morse, time, IsSendByMe})  => {
+const MorseMessage = ({callsign, uri, text, morse, time, isSendByMe})  => {
 
 const [isPlaying, setIsPlaying] = useState(false);
 
