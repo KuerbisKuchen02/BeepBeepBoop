@@ -4,6 +4,7 @@ import { Audio } from 'expo-av';
 import { useAudioRecorder, RecordingConfig } from '@siteed/expo-audio-studio'
 import { encodeMorse, decodeMorse } from './morse_util.js';
 import * as Sharing from 'expo-sharing';
+import ChatComponent from './components/ChatComponent.js';
 
 export default function App() {
   "use strict";
@@ -92,38 +93,46 @@ export default function App() {
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 20 }}>
-      <Text>BeepBeepBoop</Text>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-        <TextInput
-          type="text"
-          placeholder="Enter text to encode in Morse"
-          onChangeText={setEncodeText}
-        />
-        <Button title='Encode and Play' onPress={handleEncodeMorse} />
+    <View style={{ flex: 1, flexDirection: 'column', backgroundColor: '#eeeeee', padding: 20 }}>
+
+      <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}>
+        <ChatComponent />
       </View>
-      <View>
-        <Button title="Request Permission" onPress={() => Audio.requestPermissionsAsync()} />
-        {isRecording ? (
-          <View>
-            <Text>Duration: {durationMs / 1000} seconds</Text>
-            <Text>Size: {size} bytes</Text>
-            <Button title="Pause Recording" onPress={pauseRecording} />
-            <Button title="Stop Recording" onPress={handleStop} />
-          </View>
-        ) : isPaused ? (
-          <View>
-            <Text>Duration: {durationMs / 1000} seconds (Paused)</Text>
-            <Text>Size: {size} bytes</Text>
-            <Button title="Resume Recording" onPress={resumeRecording} />
-            <Button title="Stop Recording" onPress={handleStop} />
-          </View>
-        ) : (
-          <View>
-            <Button title="Start Recording" onPress={handleStart} />
-          </View>
-        )}
+
+      <View style={{ paddingTop: 10 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+          <TextInput
+            placeholder="Enter text to encode in Morse"
+            onChangeText={setEncodeText}
+            style={{ flex: 1, borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 4 }}
+          />
+          <Button title='Encode and Play' onPress={handleEncodeMorse} />
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+          <Button title="Request Permission" onPress={() => Audio.requestPermissionsAsync()} />
+          {isRecording ? (
+            <View>
+              <Text>Duration: {durationMs / 1000} seconds</Text>
+              <Text>Size: {size} bytes</Text>
+              <Button title="Pause Recording" onPress={pauseRecording} />
+              <Button title="Stop Recording" onPress={handleStop} />
+            </View>
+          ) : isPaused ? (
+            <View>
+              <Text>Duration: {durationMs / 1000} seconds (Paused)</Text>
+              <Text>Size: {size} bytes</Text>
+              <Button title="Resume Recording" onPress={resumeRecording} />
+              <Button title="Stop Recording" onPress={handleStop} />
+            </View>
+          ) : (
+            <View>
+              <Button title="Start Recording" onPress={handleStart} />
+            </View>
+          )}
+        </View>
       </View>
+
     </View>
   );
 }
