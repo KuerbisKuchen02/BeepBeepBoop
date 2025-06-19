@@ -1,6 +1,7 @@
 import { fromByteArray } from 'base64-js';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system';
+import { Audio } from 'expo-av';
 
 const MORSE = {
     A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.',
@@ -301,21 +302,30 @@ export async function decodeMorse(uri) {
 
 // ***************************+++++++++++*********************************
 
-export async function encodeMorse(text) {
-    const morse = textToMorse(text);
+export async function encodeMorse(morse, filenamePrefix) {
     console.log("Morse Code:", morse);
     console.log("Number of blocks:", numberOfBlocks(morse));
     const pcm = morseToPCM(morse);
     console.log("PCM Data Length:", pcm.length);
     const wavBuffer = encodeWAV(pcm);
     console.log("WAV Buffer Created: ", wavBuffer.length, "bytes");
-    const uri = FileSystem.documentDirectory + 'morse.wav';
+    const uri = FileSystem.documentDirectory + filenamePrefix + '_morse.wav';
     console.log("WAV URI:", uri);
     const base64 = fromByteArray(wavBuffer);
     console.log("Writing WAV file to:", uri);
     await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
     console.log("WAV file written successfully:", uri);
     return uri;
+}
+
+export async function playUri(uri) {
+    try {
+        const { sound } = await Audio.Sound.createAsync({ uri });
+        const avpPlayBackStatus = await sound.playAsync()        // Just Queues to play the sound, doesn't wait till sound finished playing!
+    } catch (error) {
+        console.error("Error occured while trying to play uri: " + uri);
+        console.error(error);
+    }
 }
 
 function numberOfBlocks(morse) {

@@ -15,22 +15,25 @@ export default function ChatComponent() {
     const addDummyMessages = () => {
         const dummyMessages = [
             {
+                id: 0,
                 callsign: "CS1",
-                uri: "https://example.com/audio1.mp3",
+                uri: "Invalider Pfad zu Test Zwecken",
                 text: "Hello, this is a test message.",
                 morse: "... --- ...",
                 time: "10:00",
                 isSendByMe: true,
             },
             {
+                id: 1,
                 callsign: "CS2",
-                uri: "https://example.com/audio2.mp3",
+                uri: null,
                 text: "Testing Morse code.",
                 morse: "- .... .. ... / .. ...",
                 time: "10:00",
                 isSendByMe: false,
             },
             {
+                id: 2,
                 callsign: 'KJ7XYZ',
                 text: 'Hello, can you read me?',
                 morse: '.... . .-.. .-.. ---',
@@ -39,6 +42,7 @@ export default function ChatComponent() {
                 isSendByMe: false,
             },
             {
+                id: 3,
                 callsign: 'N0CALL',
                 text: 'Loud',
                 morse: '.-.. --- ..- -..',
@@ -47,6 +51,7 @@ export default function ChatComponent() {
                 isSendByMe: true,
             },
             {
+                id: 4,
                 callsign: 'KJ7XYZ',
                 text: null,
                 morse: '-.-. -- ... / -.-. .... . -.-. -.-',
@@ -55,14 +60,16 @@ export default function ChatComponent() {
                 isSendByMe: false,
             },
             {
+                id: 5,
                 callsign: 'N0CALL',
                 text: 'Check this audio',
                 morse: '-.-. .... . -.-. -.- / .- ..- -.. .. ---',
-                uri: 'https://example.com/audio1.mp3',
+                uri: null,
                 time: "10:00",
                 isSendByMe: true,
             },
             {
+                id: 6,
                 callsign: 'N0CALL',
                 text: 'Loud',
                 morse: '.-.. --- ..- -..',
@@ -71,6 +78,7 @@ export default function ChatComponent() {
                 isSendByMe: true,
             },
             {
+                id: 7,
                 callsign: 'KJ7XYZ',
                 text: null,
                 morse: '-.-. -- ... / -.-. .... . -.-. -.-',
@@ -79,10 +87,11 @@ export default function ChatComponent() {
                 isSendByMe: false,
             },
             {
+                id: 8,
                 callsign: 'N0CALL',
                 text: 'Check this audio',
                 morse: '-.-. .... . -.-. -.- / .- ..- -.. .. ---',
-                uri: 'https://example.com/audio1.mp3',
+                uri: null,
                 time: "10:00",
                 isSendByMe: true,
             },
@@ -101,6 +110,7 @@ export default function ChatComponent() {
             contentContainerStyle={styles.chatContainer}
             renderItem={({ item }) => (
                 <MorseMessage
+                    id={item.id}
                     callsign={item.callsign}
                     uri={item.uri}
                     text={item.text}

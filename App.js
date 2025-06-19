@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, Text, TextInput, View } from 'react-native';
 import { Audio } from 'expo-av';
 import { useAudioRecorder, RecordingConfig } from '@siteed/expo-audio-studio'
-import { encodeMorse, decodeMorse } from './morse_util.js';
+import { encodeMorse, decodeMorse, textToMorse, playUri } from './morse_util.js';
 import * as Sharing from 'expo-sharing';
 import ChatComponent from './components/ChatComponent.js';
 
@@ -26,9 +26,9 @@ export default function App() {
 
   const handleEncodeMorse = async () => {
     try {
-      const uri = await encodeMorse(encodeText)
-      const { sound } = await Audio.Sound.createAsync({ uri });
-      await sound.playAsync();
+      const morse = await textToMorse(encodeText);
+      const uri = await encodeMorse(morse, "default");
+      await playUri(uri);
     } catch (error) {
       console.error('Error converting to morse:', error);
     }
