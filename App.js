@@ -16,15 +16,10 @@ export default function App() {
     <GestureHandlerRootView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1, flexDirection: 'column', backgroundColor: '#eeeeee', padding: 20 }}>
-
-            <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}>
-              <ChatComponent />
-            </View>
+            <ChatComponent />
             <InputComponent />
           </View>
-        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );

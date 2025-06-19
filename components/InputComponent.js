@@ -155,7 +155,7 @@ export default function InputComponent({ }) {
                         style={{ flex: 1, borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 4 }}
                     />
 
-                    <IconButton icon={<Fontisto name="record" size={24} color="red" onPress={handleStart} />} />
+                    <IconButton icon={<Fontisto name="mic" size={24} color="black" />} />
                     <IconButton
                         onPress={handleEncodeMorse}
                         icon={<Ionicons name="send" size={24} color="black" />}
