@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button } from 'react-native';
+import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
+
 import * as Sharing from 'expo-sharing';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import Fontisto from '@expo/vector-icons/Fontisto';
 
 import { useAudioRecorder, ExpoAudioStreamModule } from '@siteed/expo-audio-studio'
 import { AudioVisualizer } from '@siteed/expo-audio-ui';
@@ -14,7 +17,6 @@ import {
 
 export default function InputComponent({ }) {
     const [encodeText, setEncodeText] = useState('');
-    const [audioData, setAudioData] = React.useState(null);
 
     const {
         startRecording,
@@ -68,8 +70,6 @@ export default function InputComponent({ }) {
 
             // Optional: Handle audio analysis data
             onAudioAnalysis: async (analysisEvent) => {
-                console.log(`onAudioAnalysis`, analysisEvent);
-                setAudioData(analysisEvent);
             },
 
             // Optional: Handle recording interruptions
@@ -102,38 +102,79 @@ export default function InputComponent({ }) {
         }
     }
 
-    return (
-        <View style={{ paddingTop: 10 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                <TextInput
-                    placeholder="Enter text to encode in Morse"
-                    onChangeText={setEncodeText}
-                    style={{ flex: 1, borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 4 }}
-                />
-                <Button title='Encode and Play' onPress={handleEncodeMorse} />
-            </View>
+    const IconButton = ({ title, onPress, icon, border }) => (
+        <TouchableOpacity onPress={onPress}
+            style={border ? [styles.button, styles.border_button] : styles.button}
+        >
+            <Text>{title}</Text>
+            {icon}
+        </TouchableOpacity>
+    );
 
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-                {isRecording ? (
-                    <View>
-                        <Text>Duration: {durationMs / 1000} seconds</Text>
-                        <Text>Size: {size} bytes</Text>
-                        <Button title="Pause Recording" onPress={pauseRecording} />
-                        <Button title="Stop Recording" onPress={handleStop} />
+    return (
+        <View style={{ paddingTop: 10}}>
+            {isRecording ? (
+                <View>
+                    <AudioVisualizer
+                        audioData={analysisData ?? { amplitudeRange: {}, dataPoints: [] }}
+                        canvasHeight={70}
+                        candleWidth={2}
+                        candleSpace={1}
+                        showRuler={true}
+                        showNavigation={false}
+                        amplitudeScaling="normalized"
+                    />
+                    <Text>Duration: {durationMs / 1000} seconds</Text>
+                    <Text>Size: {size} bytes</Text>
+                    <View flexDirection="row" justifyContent="center" alignItems="center" gap={10} margin={10}>
+                        {/* <IconButton icon={<Fontisto name="pause" size={30} color="black" />} onPress={pauseRecording} /> */}
+                        <IconButton icon={<Fontisto name="stop" size={30} color="black" />} onPress={handleStop} border={true} />
                     </View>
-                ) : isPaused ? (
-                    <View>
-                        <Text>Duration: {durationMs / 1000} seconds (Paused)</Text>
-                        <Text>Size: {size} bytes</Text>
-                        <Button title="Resume Recording" onPress={resumeRecording} />
-                        <Button title="Stop Recording" onPress={handleStop} />
-                    </View>
-                ) : (
-                    <View>
-                        <Button title="Start Recording" onPress={handleStart} />
-                    </View>
-                )}
-            </View>
+                </View>
+            ) : isPaused ? (
+                <View>
+                    <AudioVisualizer
+                        audioData={analysisData ?? { amplitudeRange: {}, dataPoints: [] }}
+                        canvasHeight={100}
+                        candleWidth={2}
+                        candleSpace={1}
+                        showRuler={true}
+                        showNavigation={false}
+                        amplitudeScaling="normalized"
+                    />
+                    <Text>Duration: {durationMs / 1000} seconds</Text>
+                    <Text>Size: {size} bytes</Text>
+                    <IconButton icon={<Fontisto name="play" size={24} color="black" />} onPress={resumeRecording} />
+                    <IconButton icon={<Fontisto name="stop" size={24} color="black" />} onPress={handleStop} />
+                </View>
+            ) : (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                    <TextInput
+                        placeholder="Enter text to encode in Morse"
+                        onChangeText={setEncodeText}
+                        style={{ flex: 1, borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 4 }}
+                    />
+
+                    <IconButton icon={<Fontisto name="record" size={24} color="red" onPress={handleStart} />} />
+                    <IconButton
+                        onPress={handleEncodeMorse}
+                        icon={<Ionicons name="send" size={24} color="black" />}
+                    />
+                </View>
+            )}
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    button: {
+        flexDirection: 'row', 
+        alignItems: 'center',
+    },
+    border_button: {
+        borderWidth: 3, 
+        borderColor: "#ccc", 
+        padding: 10, 
+        borderRadius: 50
+    },
+})

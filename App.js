@@ -12,16 +12,6 @@ import InputComponent from './components/InputComponent.js';
 export default function App() {
   "use strict";
 
-  //   <AudioVisualizer
-  //   audioData={analysisData ?? { amplitudeRange: {}, dataPoints: [] }}
-  //   canvasHeight={100}
-  //   candleWidth={2}
-  //   candleSpace={1}
-  //   showRuler={true}
-  //   showNavigation={false}
-  //   amplitudeScaling="normalized"
-  // />
-
   return (
     <GestureHandlerRootView>
       <KeyboardAvoidingView
