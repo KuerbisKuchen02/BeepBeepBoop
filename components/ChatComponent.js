@@ -1,5 +1,6 @@
 import MorseMessage from "./MorseMessage";
-import { useState } from "react";
+import * as FileSystem from 'expo-file-system';
+import { useEffect, useState } from "react";
 import { StyleSheet, FlatList, View } from "react-native";
 import InputComponent from '../components/InputComponent.js';
 
@@ -8,8 +9,30 @@ export default function ChatComponent() {
 
     const [messages, setMessages] = useState([]);
 
+    useEffect(() => {
+        const filePath = FileSystem.documentDirectory + 'chatMessages.json';
+        const readMessagesFromFile = async () => {
+            console.log("Loading messages from file...");
+            try {
+                const fileContent = await FileSystem.readAsStringAsync(filePath);
+                const loadedMessages = JSON.parse(fileContent);
+                setMessages(loadedMessages);
+            } catch (error) {
+                console.error("Error reading messages from file:", error);
+            }
+        }
+        readMessagesFromFile();
+    }, []);
+
     const handleAddMessage = (message) => {
         setMessages(prevMessages => [...prevMessages, message]);
+
+        const writeMessagesToFile = async () => {
+            console.log("Saving messages to file...");
+            const filePath = FileSystem.documentDirectory + 'chatMessages.json';
+            await FileSystem.writeAsStringAsync(filePath, JSON.stringify([...messages, message], null, 2));
+        }
+        writeMessagesToFile()
     }
 
     const addMessage = (text, morse, callsign, isSendByMe, uri) => {
