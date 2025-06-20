@@ -1,7 +1,7 @@
 import { fromByteArray } from 'base64-js';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system';
-import { useAudioPlayer, createAudioPlayer } from 'expo-audio';
+import { createAudioPlayer } from 'expo-audio';
 
 const MORSE = {
     A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.',
