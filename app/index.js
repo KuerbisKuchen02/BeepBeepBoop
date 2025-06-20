@@ -1,11 +1,12 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
     const router = useRouter();
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 100 }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 50 }}>
+            <Image source={require('../assets/icon.png')} style={ styles.homeImage }/>
             <Text style= { styles.homeText }>Beep Beep Boop</Text>
             <View style={{ justifyContent: 'center', alignItems: 'center', gap: 20, width: "100%" }}>
               <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/callsign')}>
@@ -23,6 +24,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   homeText: {
     fontSize: 30.0
+  },
+  homeImage: {
+    width: "50%",
+    height: "30%",
+    resizeMode: 'contain',
   },
   homeButton: {
     backgroundColor: "lightgray",
