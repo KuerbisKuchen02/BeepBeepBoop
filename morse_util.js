@@ -1,7 +1,7 @@
 import { fromByteArray } from 'base64-js';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system';
-import { Audio } from 'expo-av';
+import { createAudioPlayer } from 'expo-audio';
 
 const MORSE = {
     A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.',
@@ -318,10 +318,10 @@ export async function encodeMorse(morse, filenamePrefix) {
     return uri;
 }
 
-export async function playUri(uri) {
+export  function playUri(uri) {
     try {
-        const { sound } = await Audio.Sound.createAsync({ uri });
-        const avpPlayBackStatus = await sound.playAsync()        // Just Queues to play the sound, doesn't wait till sound finished playing!
+        const player = createAudioPlayer(uri);
+        player.play();
     } catch (error) {
         console.error("Error occured while trying to play uri: " + uri);
         console.error(error);
