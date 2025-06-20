@@ -15,7 +15,7 @@ import {
     playUri
 } from '../morse_util.js';
 
-export default function InputComponent({ }) {
+export default function InputComponent({ addMessage }) {
     const [encodeText, setEncodeText] = useState('');
 
     const {
@@ -35,8 +35,10 @@ export default function InputComponent({ }) {
 
     const handleEncodeMorse = async () => {
         try {
+            setEncodeText("");
             const morse = await textToMorse(encodeText);
             const uri = await encodeMorse(morse, "default");
+            addMessage(encodeText.toUpperCase(), morse, "", true, uri);
             await playUri(uri);
         } catch (error) {
             console.error('Error converting to morse:', error);
@@ -87,7 +89,8 @@ export default function InputComponent({ }) {
     const handleStop = async () => {
         const recording = await stopRecording()
         console.log('Recording saved:', recording.fileUri)
-        decodeMorse(recording.fileUri).then((text) => {
+        decodeMorse(recording.fileUri).then(({text, morse}) => {
+            addMessage(text, morse, "", false, recording.fileUri);
             console.log("Decoded Morse text:", text);
             shareWavFile(recording.fileUri);
         });
@@ -151,6 +154,7 @@ export default function InputComponent({ }) {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                     <TextInput
                         placeholder="Enter text to encode in Morse"
+                        value={encodeText}
                         onChangeText={setEncodeText}
                         style={{ flex: 1, borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 4 }}
                     />

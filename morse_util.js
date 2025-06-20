@@ -170,17 +170,6 @@ async function readWavPCM(uri) {
     return { pcm, sampleRate };
 }
 
-/*
-function generateTone(frequency, duration, sampleRate = 44100, volume = 1) {
-    const length = sampleRate * duration;
-    const buffer = new Float32Array(length);
-    for (let i = 0; i < length; i++) {
-        buffer[i] = volume * Math.sin(2 * Math.PI * frequency * (i / sampleRate));
-    }
-    return buffer;
-}
-*/
-
 function normalizeToPeak(samples) {
     // find the maximum absolute value in the samples
     let maxAmplitude = 0;
@@ -295,7 +284,7 @@ export async function decodeMorse(uri) {
         console.log("Detected Morse:", morse);
         const text = morseToText(morse);
         console.log("Decoded Text:", text);
-        return text;
+        return {text, morse};
     } catch (error) {
         console.error("Error decoding Morse code:", error);
         throw error; // Re-throw the error for further handling
@@ -306,7 +295,6 @@ export async function decodeMorse(uri) {
 
 export async function encodeMorse(morse, filenamePrefix) {
     console.log("Morse Code:", morse);
-    console.log("Number of blocks:", numberOfBlocks(morse));
     const pcm = morseToPCM(morse);
     console.log("PCM Data Length:", pcm.length);
     const wavBuffer = encodeWAV(pcm);
@@ -320,7 +308,7 @@ export async function encodeMorse(morse, filenamePrefix) {
     return uri;
 }
 
-export  function playUri(uri) {
+export function playUri(uri) {
     try {
         const player = createAudioPlayer(uri);
         player.play();
@@ -328,28 +316,4 @@ export  function playUri(uri) {
         console.error("Error occured while trying to play uri: " + uri);
         console.error(error);
     }
-}
-
-function numberOfBlocks(morse) {
-    let count = 0;
-    for (const symbol of morse) {
-        switch (symbol) {
-            case '.':
-                count++;
-                break;
-            case '-':
-                count += 3;
-                break;
-            case ' ':
-                count += 3; // Space between letters
-                break;
-            case '/':
-                count += 7; // Space between words
-                break;
-            default:
-                console.warn("Unrecognized symbol in Morse code:", symbol);
-        }
-        count++; // Add one for the gap after each symbol
-    }
-    return count;
 }
