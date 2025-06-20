@@ -5,11 +5,11 @@ import {
   Keyboard,
   Platform
 } from 'react-native';
-import ChatComponent from './components/ChatComponent.js';
+import ChatComponent from '../components/ChatComponent.js';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import InputComponent from './components/InputComponent.js';
+import InputComponent from '../components/InputComponent.js';
 
-export default function App() {
+export default function Chat() {
   "use strict";
 
   return (
