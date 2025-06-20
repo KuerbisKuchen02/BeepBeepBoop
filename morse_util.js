@@ -1,7 +1,7 @@
 import { fromByteArray } from 'base64-js';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system';
-import { createAudioPlayer } from 'expo-audio';
+import { useAudioPlayer, createAudioPlayer } from 'expo-audio';
 
 const MORSE = {
     A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.',
@@ -9,7 +9,9 @@ const MORSE = {
     K: '-.-', L: '.-..', M: '--', N: '-.', O: '---',
     P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-',
     U: '..-', V: '...-', W: '.--', X: '-..-', Y: '-.--',
-    Z: '--..', ' ': '/'
+    Z: '--..', ' ': '/', Ä: '.-.-', Ö: '---.', Ü: '..--',
+    1: '.----.', 2: '..---', 3: '...--', 4: '....-', 5: '.....',
+    6: '-....', 7: '--...', 8: '---..', 9: '----.', 0: '-----' 
 };
 
 const DID_LENGTH = 0.1; // 100 ms for a dit
@@ -329,7 +331,7 @@ export  function playUri(uri) {
 }
 
 function numberOfBlocks(morse) {
-    count = 0;
+    let count = 0;
     for (const symbol of morse) {
         switch (symbol) {
             case '.':
