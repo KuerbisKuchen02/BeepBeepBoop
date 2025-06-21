@@ -10,6 +10,10 @@ const MORSE = {
     P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-',
     U: '..-', V: '...-', W: '.--', X: '-..-', Y: '-.--',
     Z: '--..', ' ': '/', Ä: '.-.-', Ö: '---.', Ü: '..--',
+    ß: '...--..', '.': '.-.-.-', ',': '--..--', '?': '..--..',
+    '!': '-.-.--', ':': '---...', ';': '-.-.-.', '-': '-....-', 
+    '+': '.-.-.', '=': '-...-', '@': '.--.-.', '(': '-.--.', ')': '-.--.-',
+    '_': '..--.-', '"': '.-..-.', '/': '-..-.',
     1: '.----.', 2: '..---', 3: '...--', 4: '....-', 5: '.....',
     6: '-....', 7: '--...', 8: '---..', 9: '----.', 0: '-----' 
 };
@@ -235,7 +239,7 @@ function pcmToMorse(pcm, sampleRate, threshold = THRESHOLD, ditLength = DID_LENG
                 result.push("-");
             }
         } else {
-            if (ditCounter > 2 && ditCounter < 5) {  // Detect gap between letters
+            if (ditCounter > 2 && ditCounter < 5) {  // Detect gap between letters)
                 result.push(" ")
             } else if (ditCounter > 5) {  // Detect gap between words
                 result.push("/");
@@ -246,7 +250,7 @@ function pcmToMorse(pcm, sampleRate, threshold = THRESHOLD, ditLength = DID_LENG
         lastDitWasTone = !lastDitWasTone; // update state
     }
     console.log("Finished foo:", result.length, "symbols detected");
-    return result;
+    return result; // Remove leading/trailing spaces (slashes);
 }
 
 function morseToText(morse) {
@@ -261,6 +265,9 @@ function morseToText(morse) {
             if (letter) {
                 result += letter;
             } else {
+                if (symbol.length > 0) {
+                    result += "#"+ symbol +"#"
+                } 
                 console.warn("Unrecognized Morse code symbol:", symbol);
             }
             symbol = '';
@@ -270,7 +277,7 @@ function morseToText(morse) {
         }
     }
     INVERSE_MORSE[symbol] && (result += INVERSE_MORSE[symbol]); // Add last symbol if any
-    return result;
+    return result.trim();
 }
 
 export async function decodeMorse(uri) {
@@ -284,7 +291,11 @@ export async function decodeMorse(uri) {
         console.log("Detected Morse:", morse);
         const text = morseToText(morse);
         console.log("Decoded Text:", text);
-        return {text, morse};
+        let morseStr = morse.join('')
+        console.log("Morse String:", morseStr);
+        morseStr = morseStr.replace(/^[ \/]+|[\/ ]+$/g, "");
+        console.log("Cleaned Morse String:", morseStr);
+        return {text, morse: morseStr}; // Join morse symbols into a string
     } catch (error) {
         console.error("Error decoding Morse code:", error);
         throw error; // Re-throw the error for further handling
@@ -306,14 +317,4 @@ export async function encodeMorse(morse, filenamePrefix) {
     await FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 });
     console.log("WAV file written successfully:", uri);
     return uri;
-}
-
-export function playUri(uri) {
-    try {
-        const player = createAudioPlayer(uri);
-        player.play();
-    } catch (error) {
-        console.error("Error occured while trying to play uri: " + uri);
-        console.error(error);
-    }
 }
