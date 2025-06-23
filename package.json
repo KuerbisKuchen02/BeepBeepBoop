@@ -27,8 +27,7 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-snackbar": "^2.9.0",
-    "wav-file-encoder": "^1.0.4",
-    "undefined": "vector-icons/Fontisto"
+    "wav-file-encoder": "^1.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
