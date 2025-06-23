@@ -1,6 +1,7 @@
 import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import React, { useEffect, useState } from 'react';
+import BackArrowComponent from '../components/BackArrowComponent';
 
 export default function Callsign() {
 
@@ -45,6 +46,7 @@ export default function Callsign() {
 
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20, gap: 10 }}>
+            <BackArrowComponent></BackArrowComponent>
             <Text style={styles.headText}>Callsign</Text>
             <View style={styles.inputBoxContainer}>
                 <TextInput style={styles.inputBox} value={callsign[0]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 0)} />

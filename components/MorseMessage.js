@@ -5,15 +5,15 @@ import { encodeMorse, playUri, textToMorse } from '../morse_util';
 
 /**
  * Parameters for the MorseMessage Component.
- * Integer id: Identificator of the message, used for identifiying Filesystem URI
- * String callsign: Callsign of the Sender, only when isSendByMe == false
- * String uri: Filepath to the .wav file
- * String text: Text of the message to display
- * String morse: Message as Morse Code, only containing '.' and '-'
- * String time: Time when message was send / recieved in format HH:MM
- * Boolean: isSendByMe: Whether the Message was send (true) or recieved (false)
+ * @param {int} id: Identificator of the message, used for identifiying Filesystem URI
+ * @param {String} callsign: Callsign of the Sender, only when isSendByMe == false
+ * @param {String} uri: Filepath to the .wav file
+ * @param {String} text: Text of the message to display
+ * @param {String} morse: Message as Morse Code, only containing '.' and '-'
+ * @param {String} time: Time when message was send / recieved in format HH:MM
+ * @param {boolean} isSendByMe: Whether the Message was send (true) or recieved (false)
  */
-const MorseMessage = ({id, callsign, uri, text, morse, time, isSendByMe})  => {
+export default function MorseMessage({id, callsign, uri, text, morse, time, isSendByMe}) {
 
 const [isPlaying, setIsPlaying] = useState(false);
 const [currUri, setCurrUri] = useState(uri);
@@ -134,5 +134,3 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end'
   }
 });
-
-export default MorseMessage;

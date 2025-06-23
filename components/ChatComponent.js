@@ -3,6 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import { useEffect, useState } from "react";
 import { StyleSheet, FlatList, View } from "react-native";
 import InputComponent from '../components/InputComponent.js';
+import BackArrowComponent from "./BackArrowComponent.js";
 
 export default function ChatComponent() {
     "use strict";
@@ -50,6 +51,7 @@ export default function ChatComponent() {
 
     return (
         <View style={{ flex: 1, flexDirection: 'column', backgroundColor: '#eeeeee', padding: 20 }}>
+            <BackArrowComponent></BackArrowComponent>
             <FlatList
                 data={messages}
                 keyExtractor={(item, index) => index.toString()}
