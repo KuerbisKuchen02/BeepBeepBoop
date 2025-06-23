@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
 import * as Sharing from 'expo-sharing';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Fontisto from '@expo/vector-icons/Fontisto';
 
+import Snackbar from 'react-native-snackbar';
 import { useAudioRecorder, ExpoAudioStreamModule } from '@siteed/expo-audio-studio'
 import { AudioVisualizer } from '@siteed/expo-audio-ui';
 
 import {
-    encodeMorse,
     decodeMorse,
     textToMorse,
-    playUri
 } from '../morse_util.js';
 
 export default function InputComponent({ addMessage }) {
@@ -37,9 +36,7 @@ export default function InputComponent({ addMessage }) {
         try {
             setEncodeText("");
             const morse = await textToMorse(encodeText);
-            const uri = await encodeMorse(morse, "default");
-            addMessage(encodeText.toUpperCase(), morse, "", true, uri);
-            await playUri(uri);
+            addMessage(encodeText.trim().toUpperCase(), morse, "", true, true);
         } catch (error) {
             console.error('Error converting to morse:', error);
         }
@@ -90,8 +87,16 @@ export default function InputComponent({ addMessage }) {
         const recording = await stopRecording()
         console.log('Recording saved:', recording.fileUri)
         decodeMorse(recording.fileUri).then(({text, morse}) => {
+            if (text == "" && morse == "") {
+                console.warn("No Morse code or text decoded from recording.");
+                Snackbar.show({
+                    text: 'ERROR: No Morse code or text decoded from recording.',
+                    duration: Snackbar.LENGTH_LONG,
+                    backgroundColor: 'red',
+                  });
+                return;
+            }
             addMessage(text, morse, "", false, recording.fileUri);
-            console.log("Decoded Morse text:", text);
             shareWavFile(recording.fileUri);
         });
     }

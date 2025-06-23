@@ -16,7 +16,6 @@ export default function HomeScreen() {
                 <Text style={styles.homeButtonText}>Chat</Text>
               </TouchableOpacity>
             </View>
-            
         </View>
   );
 }

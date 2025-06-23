@@ -45,7 +45,7 @@ export default function Callsign() {
 
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20, gap: 10 }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20, paddingTop: 30, gap: 10 }}>
             <BackArrowComponent></BackArrowComponent>
             <Text style={styles.headText}>Callsign</Text>
             <View style={styles.inputBoxContainer}>
