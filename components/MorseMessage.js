@@ -1,5 +1,6 @@
-import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Fontisto from '@expo/vector-icons/Fontisto';
+import styles from '../styles.js';
 
 /**
  * Parameters for the MorseMessage Component.
@@ -24,13 +25,13 @@ export default function MorseMessage({ id, callsign, uri, text, morse, time, isS
 
   return (
     <View>
-      <View style={isSendByMe ? styles.messageBox : [styles.messageBox, styles.messageBoxRetrieved]}>
-        <View style={styles.mainContainer}>
-          <Text style={styles.callsign}>{callsign}</Text>
-          <Text style={styles.messageText}>{text}</Text>
-          <Text style={styles.messageMorse}>{morse}</Text>
+      <View style={isSendByMe ? styles.messagebox : [styles.messagebox, styles.messagebox_retrieved]}>
+        <View style={styles.message_main_container}>
+          <Text style={styles.message_callsign}>{callsign}</Text>
+          <Text style={styles.message_text}>{text}</Text>
+          <Text style={styles.message_morse}>{morse}</Text>
         </View>
-        <View style={styles.secondContainer}>
+        <View style={styles.message_second_container}>
           {isLoading ? (
             <IconButton icon={<Fontisto name="spinner-rotate-forward" size={15} color="black" />} />
           ) : (
@@ -44,58 +45,9 @@ export default function MorseMessage({ id, callsign, uri, text, morse, time, isS
               )
             )
           )}
-          <Text style={styles.time}>{time}</Text>
+          <Text style={styles.message_time}>{time}</Text>
         </View>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  messageBox: {
-    alignSelf: 'flex-end',
-    maxWidth: '80%',
-    borderRadius: 25,
-    flexDirection: 'row',
-    backgroundColor: 'lightgreen',
-    borderWidth: 3,
-    borderColor: 'darkgray',
-    padding: 10,
-    gap: 5,
-  },
-  messageBoxRetrieved: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'mintcream',
-  },
-  mainContainer: {
-    flex: 5,
-    gap: 2
-  },
-  secondContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  callsign: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    textDecorationColor: 'black',
-    textDecorationLine: 'underline',
-  },
-  messageText: {
-
-  },
-  messageMorse: {
-    fontSize: 18,
-  },
-  replayButton: {
-
-  },
-  stopReplayButton: {
-
-  },
-  time: {
-    alignSelf: 'flex-end'
-  }
-});

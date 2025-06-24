@@ -1,11 +1,12 @@
 import MorseMessage from "./MorseMessage";
 import * as FileSystem from 'expo-file-system';
 import { useEffect, useState, useRef } from "react";
-import { StyleSheet, FlatList, View, Button } from "react-native";
+import { FlatList, View, Button } from "react-native";
 import InputComponent from '../components/InputComponent.js';
 import BackArrowComponent from "./BackArrowComponent.js";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { encodeMorse } from "../morse_util.js";
+import styles from '../styles.js';
 
 export default function ChatComponent() {
     "use strict";
@@ -243,17 +244,3 @@ export default function ChatComponent() {
         </View>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        width: '100%',
-    },
-    chatContainer: {
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        width: '100%',
-        marginBottom: 20,
-        paddingHorizontal: 10,
-        gap: 10,
-    },
-})

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { useEffect, useState } from 'react';
 import BackArrowComponent from '../components/BackArrowComponent';
@@ -54,10 +54,10 @@ export default function Callsign() {
 
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20, paddingTop: 30, gap: 10 }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.page_view}>
             <BackArrowComponent></BackArrowComponent>
             <Text style={[styles.h1_text]}>Callsign</Text>
-            <View style={localStyles.callsign_container}>
+            <View style={styles.callsign_container}>
                 <TextInput style={styles.callsign_input} value={callsign[0]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 0)} />
                 <TextInput style={styles.callsign_input} value={callsign[1]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 1)} />
                 <TextInput style={styles.callsign_input} value={callsign[2]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 2)} />
@@ -66,14 +66,3 @@ export default function Callsign() {
         </KeyboardAvoidingView>
     );
 };
-
-const localStyles = StyleSheet.create({
-    callsign_container: {
-        flexDirection: 'row',
-        alignSelf: 'center',
-        justifyContent: 'space-between',
-        gap: 20,
-        maxheight: 10,
-        marginVertical: 20,
-    },
-});

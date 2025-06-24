@@ -1,15 +1,13 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Fontisto from '@expo/vector-icons/Fontisto';
-
 import Snackbar from 'react-native-snackbar';
 import { useAudioRecorder, ExpoAudioStreamModule } from '@siteed/expo-audio-studio'
 import { AudioVisualizer } from '@siteed/expo-audio-ui';
-
 import { decodeMorse, textToMorse } from '../morse_util.js';
+import styles from '../styles.js';
 
 /**
  * Parameters for the MorseMessage Component.
@@ -133,7 +131,7 @@ export default function InputComponent({ addMessage }) {
     }
 
     const IconButton = ({ title, onPress, icon, border }) => (
-        <TouchableOpacity onPress={onPress} style={border ? [styles.button, styles.border_button] : styles.button}>
+        <TouchableOpacity onPress={onPress} style={border ? [styles.icon_button, styles.icon_border_button] : styles.icon_button}>
             <Text>{title}</Text>
             {icon}
         </TouchableOpacity>
@@ -192,16 +190,3 @@ export default function InputComponent({ addMessage }) {
         </View>
     )
 }
-
-const styles = StyleSheet.create({
-    button: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    border_button: {
-        borderWidth: 3,
-        borderColor: "#ccc",
-        padding: 10,
-        borderRadius: 50
-    },
-})
