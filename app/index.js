@@ -7,7 +7,7 @@ export default function HomeScreen() {
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 50 }}>
-            <Image source={require('../assets/icon.png')} style={ localStyles.homeImage }/>
+            <Image source={require('../assets/home_icon.png')} style={ localStyles.homeImage }/>
             <View>
               <Text style= { styles.h1_text }>Beep Beep Boop</Text>
               <Text style={ styles.section_text }>Learn and talk via morse!</Text>
