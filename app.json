@@ -14,7 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": {
+        "dark": "./assets/app_icons/ios-dark.png",
+        "light": "./assets/app_icons/ios-light.png"
+      }
     },
     "plugins": [
       [
@@ -31,8 +35,8 @@
     ],
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/app_icons/adaptive-icon.png",
+        "backgroundColor": "#1C2435"
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
