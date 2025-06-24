@@ -1,7 +1,7 @@
 import { fromByteArray } from 'base64-js';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system';
-import { createAudioPlayer } from 'expo-audio';
+import * as Sharing from 'expo-sharing';
 
 const MORSE = {
     A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.',
@@ -11,11 +11,11 @@ const MORSE = {
     U: '..-', V: '...-', W: '.--', X: '-..-', Y: '-.--',
     Z: '--..', ' ': '/', Ä: '.-.-', Ö: '---.', Ü: '..--',
     ß: '...--..', '.': '.-.-.-', ',': '--..--', '?': '..--..',
-    '!': '-.-.--', ':': '---...', ';': '-.-.-.', '-': '-....-', 
+    '!': '-.-.--', ':': '---...', ';': '-.-.-.', '-': '-....-',
     '+': '.-.-.', '=': '-...-', '@': '.--.-.', '(': '-.--.', ')': '-.--.-',
     '_': '..--.-', '"': '.-..-.', '/': '-..-.',
     1: '.----.', 2: '..---', 3: '...--', 4: '....-', 5: '.....',
-    6: '-....', 7: '--...', 8: '---..', 9: '----.', 0: '-----' 
+    6: '-....', 7: '--...', 8: '---..', 9: '----.', 0: '-----'
 };
 
 const DID_LENGTH = 0.1; // 100 ms for a dit
@@ -25,7 +25,7 @@ const WORD_GAP_LENGTH = DID_LENGTH * 7; // 700 ms for a word gap
 const SAMPLE_RATE = 44100; // Standard sample rate for audio
 const FREQUENCY = 440; // Frequency for the tone (A4)
 const VOLUME = 1; // Volume of the tone
-const THRESHOLD = 0.2; // Threshold for detecting sound in PCM data
+const THRESHOLD = 0.4; // Threshold for detecting sound in PCM data
 const NUMBER_OF_CHANNELS = 1; // Mono audio
 
 const INVERSE_MORSE = Object.fromEntries(
@@ -88,7 +88,6 @@ function morseToPCM(morse, frequency = FREQUENCY) {
             result = newResult;
         }
     }
-    // console.log(result);
     return result;
 }
 
@@ -139,6 +138,7 @@ function encodeWAV(float32Data, sampleRate = SAMPLE_RATE, numChannels = NUMBER_O
 
     return new Uint8Array(buffer);
 }
+
 // ***************************+++++++++++*********************************
 async function readWavPCM(uri) {
     const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
@@ -174,35 +174,61 @@ async function readWavPCM(uri) {
     return { pcm, sampleRate };
 }
 
-function normalizeToPeak(samples) {
-    // find the maximum absolute value in the samples
-    let maxAmplitude = 0;
+function normalizeByPercentile(samples, percentile = 99, target = 1.0) {
+    const absSamples = Array.from(samples, Math.abs).sort((a, b) => a - b);
+    const index = Math.floor((percentile / 100) * absSamples.length);
+    const value = absSamples[Math.min(index, absSamples.length - 1)];
+
+    const factor = target / value;
+    const out = new Float32Array(samples.length);
     for (let i = 0; i < samples.length; i++) {
-        const absVal = Math.abs(samples[i]);
-        if (absVal > maxAmplitude) maxAmplitude = absVal;
+        out[i] = samples[i] * factor;
     }
-    console.log("Maximum amplitude found:", maxAmplitude);
+    return out;
+}
 
-    // if the maximum amplitude is 0, return the original samples
-    if (maxAmplitude === 0) {
-        return Float32Array.from(samples);
-    }
-
-    // calculate the gain factor to normalize to 1.0
-    const gain = 1.0 / maxAmplitude;
-    console.log("Normalization gain factor:", gain);
-
-    // gain the samples and ensure they are within the range [-1.0, 1.0]
-    const normalized = new Float32Array(samples.length);
+function applyHardLimit(samples, limit = 1.0) {
+    const out = new Float32Array(samples.length);
     for (let i = 0; i < samples.length; i++) {
-        let s = samples[i] * gain;
-        // clamp the value to the range [-1.0, 1.0]
-        if (s > 1.0) s = 1.0;
-        else if (s < -1.0) s = -1.0;
-        normalized[i] = s;
+        const x = samples[i];
+        if (x > limit) {
+            out[i] = limit;
+        } else if (x < -limit) {
+            out[i] = -limit;
+        } else {
+            out[i] = x;
+        }
+    }
+    return out;
+}
+
+function trimSilence(samples, threshold = 0.5) {
+    let start = 0;
+    let end = samples.length - 1;
+
+    // Finde erstes Sample über dem Threshold (Vorwärts)
+    while (start < samples.length && Math.abs(samples[start]) < threshold) {
+        start++;
     }
 
-    return normalized;
+    // Finde letztes Sample über dem Threshold (Rückwärts)
+    while (end > start && Math.abs(samples[end]) < threshold) {
+        end--;
+    }
+
+    const trimmedLength = end - start + 1;
+    if (trimmedLength <= 0) {
+        // alles ist Stille – gib leeren Array zurück
+        return new Float32Array(0);
+    }
+
+    // Neues Array mit getrimmtem Inhalt
+    const out = new Float32Array(trimmedLength);
+    for (let i = 0; i < trimmedLength; i++) {
+        out[i] = samples[start + i];
+    }
+
+    return out;
 }
 
 function pcmToMorse(pcm, sampleRate, threshold = THRESHOLD, ditLength = DID_LENGTH) {
@@ -211,6 +237,16 @@ function pcmToMorse(pcm, sampleRate, threshold = THRESHOLD, ditLength = DID_LENG
     const blocks = [];
 
     console.log("PCM Length:", pcm.length, "Sample Rate:", sampleRate, "Dit Length:", ditLength, "Dit Size:", dit);
+
+    // Find the first non-zero sample to determine the start of the signal
+    for (let i = 0; i < pcm.length; i++) {
+        if (Math.abs(pcm[i]) > threshold) {
+            console.log("First non-zero sample found at index:", i, "value:", pcm[i]);
+            pcm = pcm.slice(i); // Trim the PCM data to start from the first non-zero sample
+            break;
+        }
+    }
+
     // Go over all Blocks and determine if they are above the threshold (sound)
     for (let i = 0; i < pcm.length; i = i + dit + 1) {
         const window = pcm.slice(i, i + dit);
@@ -254,8 +290,8 @@ function pcmToMorse(pcm, sampleRate, threshold = THRESHOLD, ditLength = DID_LENG
 }
 
 function morseToText(morse) {
-    result = '';
-    symbol = '';
+    let result = '';
+    let symbol = '';
     for (let i = 0; i < morse.length; i++) {
         if (morse[i] !== ' ' && morse[i] !== '/') {
             symbol += morse[i];
@@ -266,8 +302,8 @@ function morseToText(morse) {
                 result += letter;
             } else {
                 if (symbol.length > 0) {
-                    result += "#"+ symbol +"#"
-                } 
+                    result += "#" + symbol + "#"
+                }
                 console.warn("Unrecognized Morse code symbol:", symbol);
             }
             symbol = '';
@@ -280,14 +316,34 @@ function morseToText(morse) {
     return result.trim();
 }
 
+// only for debugging
+function createFileFromPCMAndShare(pcm, name) {
+    const wavBuffer = encodeWAV(pcm);
+    const uri = FileSystem.documentDirectory + name + '.wav';
+    const base64 = fromByteArray(wavBuffer);
+    FileSystem.writeAsStringAsync(uri, base64, { encoding: FileSystem.EncodingType.Base64 }).then(() => {
+        Sharing.shareAsync(uri); // Share the temporary WAV file for debugging
+    })
+
+}
+
 export async function decodeMorse(uri) {
     try {
+
         console.log("Decoding Morse from URI:", uri);
         const { pcm, sampleRate } = await readWavPCM(uri);
         console.log("PCM Data Length:", pcm.length, "Sample Rate:", sampleRate);
-        const normalizedPCM = normalizeToPeak(pcm);
-        console.log("Normalized PCM Data Length:", normalizedPCM.length);
-        const morse = pcmToMorse(normalizedPCM, sampleRate);
+
+        // Prepare pcm data (normalize, limit, trim)
+        let data = pcm;
+        data = normalizeByPercentile(data);
+        data = applyHardLimit(data);
+        data = trimSilence(data);
+        console.log("Trimmed PCM Data Length:", data.length);
+        createFileFromPCMAndShare(data, "final");
+
+
+        const morse = pcmToMorse(data, sampleRate);
         console.log("Detected Morse:", morse);
         const text = morseToText(morse);
         console.log("Decoded Text:", text);
@@ -295,7 +351,7 @@ export async function decodeMorse(uri) {
         console.log("Morse String:", morseStr);
         morseStr = morseStr.replace(/^[ \/]+|[\/ ]+$/g, "");
         console.log("Cleaned Morse String:", morseStr);
-        return {text, morse: morseStr}; // Join morse symbols into a string
+        return { text, morse: morseStr }; // Join morse symbols into a string
     } catch (error) {
         console.error("Error decoding Morse code:", error);
         throw error; // Re-throw the error for further handling
