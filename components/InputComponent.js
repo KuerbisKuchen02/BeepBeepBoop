@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import * as FileSystem from 'expo-file-system';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Fontisto from '@expo/vector-icons/Fontisto';
@@ -31,7 +32,22 @@ export default function InputComponent({ addMessage }) {
     } = useAudioRecorder({
         logger: console,
     })
-
+    
+    /**
+     * Reads the callsign from the filesystem.
+     * @returns {string} - The callsign read from the file, or an empty string if the callsign has less than 3 characters.
+     */
+    const readCallsignFromFile = async () => {
+        console.log("Loading callsign from file...");
+        try {
+            const filePath = FileSystem.documentDirectory + 'callsign.json';
+            const fileContent = await FileSystem.readAsStringAsync(filePath);
+            const callSign = JSON.parse(fileContent).join("").toUpperCase();
+            return callSign.length === 3 ? callSign : "";
+        } catch (error) {
+            console.error("Error reading callsign from file:", error);
+        }
+    }
 
     /**
      * Handles the encoding of text to Morse code and sends the message.
@@ -40,8 +56,17 @@ export default function InputComponent({ addMessage }) {
     const handleEncodeMorse = async () => {
         try {
             if (encodeText.length === 0) { return; }
-            const morse = await textToMorse(encodeText);
-            addMessage(encodeText.trim().toUpperCase(), morse, "", null, true, true);
+
+            // Read the callsign from the file system
+            // morseText contains the message with the callsign prefixed.
+            // displayText contains the actual message without the callsign.
+            // This is done to ensure that the callsign is not displayed in the input field.
+            const callSign = await readCallsignFromFile();
+            const displayText = encodeText.trim().toUpperCase();
+            const morseText = callSign.length? "@" + callSign + ": " + encodeText : encodeText
+            const morse = await textToMorse(morseText);
+
+            addMessage(displayText, morse, callSign, null, true, true);
             setEncodeText("");
         } catch (error) {
             console.error('InputComponent:handleEncodeMorse: ', error);
@@ -82,6 +107,7 @@ export default function InputComponent({ addMessage }) {
      * @returns {Promise<void>}
      */
     const handleStop = async () => {
+        let callSign = "";
         const recording = await stopRecording();
         console.log(`InputComponent:handleStop: Recording saved: ${recording.fileUri}`);
         decodeMorse(recording.fileUri).then(({ text, morse }) => {
@@ -94,7 +120,15 @@ export default function InputComponent({ addMessage }) {
                 });
                 return;
             }
-            addMessage(text, morse, "", recording.fileUri);
+
+            // If the text starts with a call sign in the format @XXX: , extract the call sign
+            console.log(`InputComponent:handleStop: Evaluating ${text}`);
+            if (text.match(/@[A-Z]{3}: /)) {
+                callSign = text.substring(1,4);
+                text = text.substring(6);
+            }
+            console.log(`Callsign: ${callSign}, Text: ${text}`);
+            addMessage(text, morse, callSign, recording.fileUri);
         });
     }
 

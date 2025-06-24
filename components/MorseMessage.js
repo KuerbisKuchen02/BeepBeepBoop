@@ -23,7 +23,7 @@ export default function MorseMessage({ id, callsign, uri, text, morse, time, isS
     <View>
       <View style={isSendByMe ? styles.messageBox : [styles.messageBox, styles.messageBoxRetrieved]}>
         <View style={styles.mainContainer}>
-          {!isSendByMe && <Text style={styles.callsign}>{callsign}</Text>}
+          <Text style={styles.callsign}>{callsign}</Text>
           <Text style={styles.messageText}>{text}</Text>
           <Text style={styles.messageMorse}>{morse}</Text>
         </View>
