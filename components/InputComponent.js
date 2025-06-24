@@ -32,7 +32,7 @@ export default function InputComponent({ addMessage }) {
     } = useAudioRecorder({
         logger: console,
     })
-    
+
     /**
      * Reads the callsign from the filesystem.
      * @returns {string} - The callsign read from the file, or an empty string if the callsign has less than 3 characters.
@@ -46,6 +46,7 @@ export default function InputComponent({ addMessage }) {
             return callSign.length === 3 ? callSign : "";
         } catch (error) {
             console.error("Error reading callsign from file:", error);
+            return "";
         }
     }
 
@@ -63,7 +64,7 @@ export default function InputComponent({ addMessage }) {
             // This is done to ensure that the callsign is not displayed in the input field.
             const callSign = await readCallsignFromFile();
             const displayText = encodeText.trim().toUpperCase();
-            const morseText = callSign.length? "@" + callSign + ": " + encodeText : encodeText
+            const morseText = callSign.length === 3 ? `@${callSign}: ${encodeText}`: encodeText;
             const morse = await textToMorse(morseText);
 
             addMessage(displayText, morse, callSign, null, true, true);
@@ -124,7 +125,7 @@ export default function InputComponent({ addMessage }) {
             // If the text starts with a call sign in the format @XXX: , extract the call sign
             console.log(`InputComponent:handleStop: Evaluating ${text}`);
             if (text.match(/@[A-Z]{3}: /)) {
-                callSign = text.substring(1,4);
+                callSign = text.substring(1, 4);
                 text = text.substring(6);
             }
             console.log(`Callsign: ${callSign}, Text: ${text}`);
