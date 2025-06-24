@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -8,10 +8,13 @@ import Snackbar from 'react-native-snackbar';
 import { useAudioRecorder, ExpoAudioStreamModule } from '@siteed/expo-audio-studio'
 import { AudioVisualizer } from '@siteed/expo-audio-ui';
 
-import {
-    decodeMorse,
-    textToMorse,
-} from '../morse_util.js';
+import { decodeMorse, textToMorse } from '../morse_util.js';
+
+/**
+ * Parameters for the MorseMessage Component.
+ * @param {Function} addMessage - Function to handle sending a message.
+ * @description Component which handles text input and audio recording for Morse code messages.
+ */
 
 export default function InputComponent({ addMessage }) {
     const [encodeText, setEncodeText] = useState('');
@@ -19,18 +22,21 @@ export default function InputComponent({ addMessage }) {
     const {
         startRecording,
         stopRecording,
-        pauseRecording,
         resumeRecording,
         isRecording,
         isPaused,
         durationMs,
         size,
         analysisData,
-        compression,
     } = useAudioRecorder({
         logger: console,
     })
 
+
+    /**
+     * Handles the encoding of text to Morse code and sends the message.
+     * @returns {Promise<void>}
+     */
     const handleEncodeMorse = async () => {
         try {
             if (encodeText.length === 0) { return; }
@@ -38,14 +44,18 @@ export default function InputComponent({ addMessage }) {
             addMessage(encodeText.trim().toUpperCase(), morse, "", null, true, true);
             setEncodeText("");
         } catch (error) {
-            console.error('Error converting to morse:', error);
+            console.error('InputComponent:handleEncodeMorse: ', error);
         }
     }
 
+    /**
+     * First, requests permission to access the microphone. Then, starts the audio recording with a specified configuration.
+     * @returns {Promise<void>}
+     */
     const handleStart = async () => {
-        const { status } = await ExpoAudioStreamModule.requestPermissionsAsync()
+        const { status } = await ExpoAudioStreamModule.requestPermissionsAsync();
         if (status !== 'granted') {
-            console.error('Permission to access microphone was denied');
+            console.error('InputComponent:handleStart: Permission to access microphone was denied');
             return;
         }
         const config = {
@@ -55,45 +65,33 @@ export default function InputComponent({ addMessage }) {
             channels: 1, // Mono recording
             encoding: 'pcm_16bit', // PCM encoding (pcm_8bit, pcm_16bit, pcm_32bit)
 
-            // Optional: Configure audio compression
-            compression: {
-                enabled: false, // Set to true to enable compression
-                format: 'aac', // 'aac' or 'opus'
-                bitrate: 16000, // Bitrate in bits per second
-            },
-
-            // Optional: Handle audio stream data
-            onAudioStream: async (audioData) => {
-                // console.log(`onAudioStream`, audioData)
-            },
-
-            // Optional: Handle audio analysis data
-            onAudioAnalysis: async (analysisEvent) => {
-            },
-
-            // Optional: Handle recording interruptions
+            // Handle recording interruptions
             onRecordingInterrupted: (event) => {
-                console.log(`Recording interrupted: ${event.reason}`)
+                console.log(`InputComponent:handleStart: Recording interrupted: ${event.reason}`);
             },
 
-            // Optional: Auto-resume after interruption
-            autoResumeAfterInterruption: false,
+            autoResumeAfterInterruption: false  // Auto-resume after interruption
         }
 
         await startRecording(config)
     }
 
+    /**
+     * Handles stopping the audio recording and decoding the Morse code from the recording.
+     * Displays a Snackbar message if no Morse code or text is decoded.
+     * @returns {Promise<void>}
+     */
     const handleStop = async () => {
-        const recording = await stopRecording()
-        console.log('Recording saved:', recording.fileUri)
-        decodeMorse(recording.fileUri).then(({text, morse}) => {
+        const recording = await stopRecording();
+        console.log(`InputComponent:handleStop: Recording saved: ${recording.fileUri}`);
+        decodeMorse(recording.fileUri).then(({ text, morse }) => {
             if (text == "" && morse == "") {
-                console.warn("No Morse code or text decoded from recording.");
+                console.warn("InputComponent:handleStop: No Morse code or text decoded from recording.");
                 Snackbar.show({
                     text: 'ERROR: No Morse code or text decoded from recording.',
                     duration: Snackbar.LENGTH_LONG,
                     backgroundColor: 'red',
-                  });
+                });
                 return;
             }
             addMessage(text, morse, "", recording.fileUri);
@@ -101,16 +99,14 @@ export default function InputComponent({ addMessage }) {
     }
 
     const IconButton = ({ title, onPress, icon, border }) => (
-        <TouchableOpacity onPress={onPress}
-            style={border ? [styles.button, styles.border_button] : styles.button}
-        >
+        <TouchableOpacity onPress={onPress} style={border ? [styles.button, styles.border_button] : styles.button}>
             <Text>{title}</Text>
             {icon}
         </TouchableOpacity>
     );
 
     return (
-        <View style={{ paddingTop: 10}}>
+        <View style={{ paddingTop: 10 }}>
             {isRecording ? (
                 <View>
                     <AudioVisualizer
@@ -125,7 +121,6 @@ export default function InputComponent({ addMessage }) {
                     <Text>Duration: {durationMs / 1000} seconds</Text>
                     <Text>Size: {size} bytes</Text>
                     <View flexDirection="row" justifyContent="center" alignItems="center" gap={10} margin={10}>
-                        {/* <IconButton icon={<Fontisto name="pause" size={30} color="black" />} onPress={pauseRecording} /> */}
                         <IconButton icon={<Fontisto name="stop" size={30} color="black" />} onPress={handleStop} border={true} />
                     </View>
                 </View>
@@ -141,7 +136,6 @@ export default function InputComponent({ addMessage }) {
                         amplitudeScaling="normalized"
                     />
                     <Text>Duration: {durationMs / 1000} seconds</Text>
-                    <Text>Size: {size} bytes</Text>
                     <IconButton icon={<Fontisto name="play" size={24} color="black" />} onPress={resumeRecording} />
                     <IconButton icon={<Fontisto name="stop" size={24} color="black" />} onPress={handleStop} />
                 </View>
@@ -167,13 +161,13 @@ export default function InputComponent({ addMessage }) {
 
 const styles = StyleSheet.create({
     button: {
-        flexDirection: 'row', 
+        flexDirection: 'row',
         alignItems: 'center',
     },
     border_button: {
-        borderWidth: 3, 
-        borderColor: "#ccc", 
-        padding: 10, 
+        borderWidth: 3,
+        borderColor: "#ccc",
+        padding: 10,
         borderRadius: 50
     },
 })
