@@ -1,6 +1,6 @@
 import MorseMessage from "./MorseMessage";
 import * as FileSystem from 'expo-file-system';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { StyleSheet, FlatList, View, Button } from "react-native";
 import InputComponent from '../components/InputComponent.js';
 import BackArrowComponent from "./BackArrowComponent.js";
@@ -16,6 +16,7 @@ export default function ChatComponent() {
     const [isLoadingId, setIsLoadingId] = useState(-1);
     const player = useAudioPlayer();
     const playerStatus = useAudioPlayerStatus(player);
+    const flatListRef = useRef(null);
 
     /**
      * Load messages from file when the component mounts.
@@ -214,6 +215,7 @@ export default function ChatComponent() {
         <View style={{ flex: 1, flexDirection: 'column', backgroundColor: '#eeeeee', padding: 20, paddingTop: 30 }}>
             <BackArrowComponent></BackArrowComponent>
             <FlatList
+                ref={flatListRef}
                 data={messages}
                 keyExtractor={(item, index) => index.toString()}
                 contentContainerStyle={styles.chatContainer}
@@ -230,7 +232,11 @@ export default function ChatComponent() {
                         isPlaying={isPlayingId === item.id}
                         isLoading={isLoadingId === item.id}
                     />
-                )} >
+                )}
+                // Automatically scroll to the end when new messages are added or content size changes
+                onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true, viewPosition: 0})} 
+                onLayout={() => setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true, viewPosition: 0}), 100)}
+                ListFooterComponent={<View style={{ height: 40 }} />}>
             </FlatList>
             <Button title="Clear Messages" onPress={clearMessages} color="red" />
             <InputComponent addMessage={addMessage} />
