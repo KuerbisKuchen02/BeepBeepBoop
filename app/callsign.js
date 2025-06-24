@@ -2,6 +2,7 @@ import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform } fro
 import * as FileSystem from 'expo-file-system';
 import React, { useEffect, useState } from 'react';
 import BackArrowComponent from '../components/BackArrowComponent';
+import styles from '../styles.js';
 
 export default function Callsign() {
 
@@ -47,39 +48,24 @@ export default function Callsign() {
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20, paddingTop: 30, gap: 10 }}>
             <BackArrowComponent></BackArrowComponent>
-            <Text style={styles.headText}>Callsign</Text>
-            <View style={styles.inputBoxContainer}>
-                <TextInput style={styles.inputBox} value={callsign[0]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 0)} />
-                <TextInput style={styles.inputBox} value={callsign[1]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 1)} />
-                <TextInput style={styles.inputBox} value={callsign[2]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 2)} />
+            <Text style={[styles.h1_text]}>Callsign</Text>
+            <View style={localStyles.callsign_container}>
+                <TextInput style={styles.callsign_input} value={callsign[0]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 0)} />
+                <TextInput style={styles.callsign_input} value={callsign[1]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 1)} />
+                <TextInput style={styles.callsign_input} value={callsign[2]} maxLength={1} onChangeText={(text) => handleCharChanged(text, 2)} />
             </View>
-            <Text style={styles.descriptionText}>Enter a 3 character sequence to identify yourself in chats</Text>
+            <Text style={styles.section_text}>Enter a 3 character sequence to identify yourself in chats</Text>
         </KeyboardAvoidingView>
     );
 };
 
-const styles = StyleSheet.create({
-    headText: {
-        fontSize: 30.0,
-        textAlign: "center",
-    },
-    descriptionText: {
-        fontSize: 20.0,
-        textAlign: "center",
-    },
-    inputBoxContainer: {
+const localStyles = StyleSheet.create({
+    callsign_container: {
         flexDirection: 'row',
         alignSelf: 'center',
         justifyContent: 'space-between',
         gap: 20,
         maxheight: 10,
+        marginVertical: 20,
     },
-    inputBox: {
-        fontSize: 18,
-        fontStyle: 'bold',
-        borderBlockColor: 'black',
-        borderWidth: 5,
-        textAlign: 'center',
-        minWidth: '10%',
-    }
 });
