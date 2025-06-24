@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native'
 
 const primaryColor = '#1C2435';
-const disabledColor = '#A9A9A9';
+const disabledColor = 'lightgray';
 
 export default StyleSheet.create({
     h1_text: {
