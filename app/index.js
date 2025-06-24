@@ -19,6 +19,9 @@ export default function HomeScreen() {
               <TouchableOpacity style={[localStyles.homeButton, styles.button_body, styles.button_body_enabled]} onPress={() => router.push('/chat')}>
                 <Text style={[styles.button_text, styles.button_text_enabled]}>Chat</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/learn')}>
+                <Text style={styles.homeButtonText}>Learn</Text>
+              </TouchableOpacity>
             </View>
         </View>
   );
