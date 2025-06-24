@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
-import * as Sharing from 'expo-sharing';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Fontisto from '@expo/vector-icons/Fontisto';
 
@@ -36,7 +35,7 @@ export default function InputComponent({ addMessage }) {
         try {
             setEncodeText("");
             const morse = await textToMorse(encodeText);
-            addMessage(encodeText.trim().toUpperCase(), morse, "", true, true);
+            addMessage(encodeText.trim().toUpperCase(), morse, "", null, true, true);
         } catch (error) {
             console.error('Error converting to morse:', error);
         }
@@ -96,18 +95,8 @@ export default function InputComponent({ addMessage }) {
                   });
                 return;
             }
-            addMessage(text, morse, "", false, recording.fileUri);
-            shareWavFile(recording.fileUri);
+            addMessage(text, morse, "", recording.fileUri);
         });
-    }
-
-    async function shareWavFile(uri) {
-        const isAvailable = await Sharing.isAvailableAsync();
-        if (isAvailable) {
-            await Sharing.shareAsync(uri);
-        } else {
-            console.log("Sharing nicht verfügbar");
-        }
     }
 
     const IconButton = ({ title, onPress, icon, border }) => (

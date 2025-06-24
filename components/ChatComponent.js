@@ -164,12 +164,14 @@ export default function ChatComponent() {
         }
     }
 
-    const addMessage = (text, morse, callsign, isSendByMe, autoPlay) => {
+    const addMessage = (text, morse, callsign, uri=null, isSendByMe=false, autoPlay=false) => {
+        console.log("Adding new message:", { text, morse, callsign, isSendByMe, uri, autoPlay });
         setPlayLastMessage(autoPlay);
         const newMessage = {
             id: messages.length,
             callsign: callsign,
             text: text,
+            uri: uri,
             morse: morse,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isSendByMe: isSendByMe
