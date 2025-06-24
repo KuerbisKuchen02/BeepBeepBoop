@@ -1,6 +1,6 @@
 import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import BackArrowComponent from '../components/BackArrowComponent';
 import styles from '../styles.js';
 
@@ -8,8 +8,13 @@ export default function Callsign() {
 
     const [callsign, setCallsign] = useState(["", "", ""]);
 
-    const handleCharChanged = (value, index) => {
-        console.log("Changing value at index:", index, "to:", value);
+    /**
+     * Gets called when the user changes one of the three characters of the callsign.
+     * @param {char} value: New character of callsign
+     * @param {int} index: Index of the new character [0-2]
+     */
+    function handleCharChanged(value, index) {
+        console.log("callsign:handleCharged: Changing value at index:", index, "to:", value);
         const newCallsign = callsign.map((char, curIndex) => {
             if (curIndex === index) {
                 return value.toUpperCase();
@@ -17,9 +22,9 @@ export default function Callsign() {
                 return char;
             }
         });
-        console.log("New callsign:", newCallsign);
+        console.log("callsign:handleCharged: New callsign:", newCallsign);
         const writeCallsignToFile = async () => {
-            console.log("Saving callsign to file...");
+            console.log("callsign:handleCharged: Saving callsign to file...");
             const filePath = FileSystem.documentDirectory + 'callsign.json';
             await FileSystem.writeAsStringAsync(filePath, JSON.stringify(newCallsign, null, 2));
         }
@@ -27,22 +32,25 @@ export default function Callsign() {
         setCallsign(newCallsign);
     }
 
-    useEffect(() => {
-        const readCallsignFromFile = async () => {
-            console.log("Loading callsign from file...");
-            try {
-                const filePath = FileSystem.documentDirectory + 'callsign.json';
-                const fileContent = await FileSystem.readAsStringAsync(filePath);
-                const callSign = JSON.parse(fileContent);
-                console.log("Callsign loaded:", callSign);
-                setCallsign(callSign.map(char => char.toUpperCase()));
-            } catch (error) {
-                console.error("Error reading callsign from file:", error);
-            }
+    /**
+     * Loads the saved callsign from the filesystem and initialises the corresponding useState accordingly.
+     */
+    async function readCallsignFromFile() {
+        console.log("Loading callsign from file...");
+        try {
+            const filePath = FileSystem.documentDirectory + 'callsign.json';
+            const fileContent = await FileSystem.readAsStringAsync(filePath);
+            const callSign = JSON.parse(fileContent);
+            console.log("Callsign loaded:", callSign);
+            setCallsign(callSign.map(char => char.toUpperCase()));
+        } catch (error) {
+            console.error("Error reading callsign from file:", error);
         }
+    }
+
+    useEffect(() => {
         readCallsignFromFile();
     }, []);
-
 
 
     return (
