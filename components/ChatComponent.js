@@ -17,64 +17,74 @@ export default function ChatComponent() {
     const player = useAudioPlayer();
     const playerStatus = useAudioPlayerStatus(player);
 
-    // Load messages from file when the component mounts
+    /**
+     * Load messages from file when the component mounts.
+     */ 
     useEffect(() => {
         const filePath = FileSystem.documentDirectory + 'chatMessages.json';
         const readMessagesFromFile = async () => {
-            console.log("Loading messages from file...");
+            console.log("ChatComponent.js:useEffect[]: Loading messages from file...");
             try {
                 const fileContent = await FileSystem.readAsStringAsync(filePath);
                 const loadedMessages = JSON.parse(fileContent);
                 setMessages(loadedMessages);
             } catch (error) {
-                console.error("Error reading messages from file:", error);
+                console.error("ChatComponent.js:useEffect[]: Error reading messages from file:", error);
             }
         }
         readMessagesFromFile();
     }, []);
 
-    // Save messages to file whenever messages change
+    /**
+     * Save messages to file whenever messages change.
+     */ 
     useEffect(() => {
         const writeMessagesToFile = async () => {
-            console.log("Saving messages to file...");
+            console.log("ChatComponent.js:useEffect[messages]: Saving messages to file...");
             const filePath = FileSystem.documentDirectory + 'chatMessages.json';
             await FileSystem.writeAsStringAsync(filePath, JSON.stringify([...messages], null, 2));
         }
-        writeMessagesToFile()
+        writeMessagesToFile();
     }, [messages]);
 
-    // Stop audio playback when audio is finished
+    /**
+     * Stop audio playback when audio is finished.
+     */ 
     useEffect(() => {
         if (playerStatus.didJustFinish && playerStatus.playing) {
-            console.log("Audio finished playing, resetting player");
+            console.log("ChatComponent.js:useEffect[playerStatus]: Audio finished playing, resetting player");
             player.seekTo(0);
             player.pause();
             setIsPlayingId(-1);
         }
     }, [playerStatus]);
 
-    // Play last message automatically when playLastMessage is true
+    /** 
+     * Play last message automatically when playLastMessage is true
+     */
     useEffect(() => {
-        console.log("Available messages after adding new message:", messages);
+        console.log("ChatComponent.js:useEffect[messages, playLastMessage]: Available messages after adding new message:", messages);
         if (playLastMessage) {
-            console.log("Playing last message automatically...");
+            console.log("ChatComponent.js:useEffect[message, playLastMessage]: Playing last message automatically...");
             const message = messages[messages.length - 1];
             handleButtonClick(message.id, null);
             setPlayLastMessage(false);
         }
     }, [messages, playLastMessage]);
 
-    // Clear messages for debugging purposes
+    /**
+     * Clear messages for debugging purposes
+     */
     const clearMessages = () => {
-        console.log("Clearing messages...");
+        console.log("ChatComponent.js:clearMessages: Clearing messages...");
         setMessages([]);
         const filePath = FileSystem.documentDirectory + 'chatMessages.json';
         FileSystem.writeAsStringAsync(filePath, JSON.stringify([]))
             .then(() => {
-                console.log("Messages cleared and saved to file.");
+                console.log("ChatComponent.js:clearMessages: Messages cleared and saved to file.");
             })
             .catch((error) => {
-                console.error("Error clearing messages:", error);
+                console.error("ChatComponent.js:clearMessages: Error clearing messages:", error);
             });
     }
 
@@ -84,11 +94,11 @@ export default function ChatComponent() {
      * If the morse is null, a morse will be created from the text of the message.
      * If the text is also null no uri can be created.
      * Returns true when path existed, otherwise returns false.
-     * @param message: Message object containing the uri, morse and text data.
+     * @param {object} message: Message object containing the uri, morse and text data.
      * @returns string uri or null if no uri could be created.
      */
     async function validateUri(message) {
-        console.log("Validating URI for message:", message);
+        console.log("ChatComponent.js:validateUri: Validating URI for message:", message);
         let uri = message.uri;
         // Check wheter the uri is available and valid
         try {
@@ -101,31 +111,35 @@ export default function ChatComponent() {
                 return uri;
             }
 
-            console.warn("Uri Path is invalid, try to create uri via morse data")
+            console.warn("ChatComponent.js:validateUri: Uri Path is invalid, try to create uri via morse data");
             if (message.morse == null && message.text == null) {
-                console.error("Error while trying to create Uri. No data to create Uri from!");
+                console.error("ChatComponent.js:validateUri: Error while trying to create Uri. No data to create Uri from!");
                 return null;
             }
 
             let morse = message.morse;
             if (morse == null) {
-                console.warn("Morse data isn't available, trying to create morse via text data")
+                console.warn("ChatComponent.js:validateUri: Morse data isn't available, trying to create morse via text data");
                 morse = await textToMorse(text);
             }
             uri = await encodeMorse(morse, "message_" + message.id);
         } catch (error) {
-            console.error("Error while trying to create Uri from other data!");
+            console.error("ChatComponent.js:validateUri: Error while trying to create Uri from other data!");
             console.error(error);
             return null;
         }
-        console.log("Created new URI from morse data:", uri);
+        console.log("ChatComponent.js:validateUri: Created new URI from morse data:", uri);
         return uri;
     }
 
-    const updateMessage = (id, newMessage) => {
-        console.log("Updating message with ID:", id);
-        console.log("New message data:", newMessage);
-        // TODO: update saved messages in file
+    /**
+     * Updates the data of the message object with the given id.
+     * @param {int} id: ID of the message which data should be updated.
+     * @param {object} newMessage: New message data.
+     */
+    function updateMessage(id, newMessage) {
+        console.log("ChatComponent.js:updateMessage: Updating message with ID:", id);
+        console.log("ChatComponent.js:updateMessage: New message data:", newMessage);
         setMessages(prevMessages => {
             const updatedMessages = [...prevMessages];
             updatedMessages[id] = newMessage;
@@ -133,39 +147,56 @@ export default function ChatComponent() {
         });
     }
 
-    const handleButtonClick = async (id, uri) => {
-        console.log("Button clicked for message ID:", id);
+    /**
+     * Gets called when the user clicks the button of a message within this component.
+     * When the Message has no uri, a new one will be created by calling validate uri.
+     * If the audioplayer is already playing the uri of this message it will be stopped.
+     * Otherwise the audioplayer will start playing the uri.
+     * @param {int} id: ID of the message which corresponding button was clicked.
+     * @returns 
+     */
+    async function handleButtonClick(id) {
+        console.log("ChatComponent.js:handleButtonClick: Button clicked for message ID:", id);
         const message = messages[id];
         if (!message) {
-            console.error("Message not found for ID:", id);
-            console.log("Available messages:", messages);
+            console.error("ChatComponent.js:handleButtonClick: Message not found for ID:", id);
+            console.log("ChatComponent.js:handleButtonClick: Available messages:", messages);
             return;
         }
         setIsLoadingId(id);
-        message.uri = uri = await validateUri(message)
+        message.uri = await validateUri(message);
         updateMessage(id, message);
         setIsLoadingId(-1);
-        if (uri == null) {
-            console.error("Cannot play audio no uri", id);
+        if (message.uri == null) {
+            console.error("ChatComponent.js:handleButtonClick: Cannot play audio no uri", id);
             return;
         }
 
         if (playerStatus.playing && isPlayingId === id) {
-            console.log("Stopping audio for message ID:", id);
+            console.log("ChatComponent.js:handleButtonClick: Stopping audio for message ID:", id);
             player.pause();
             player.seekTo(0);
             setIsPlayingId(-1);
         } else {
-            console.log("Playing audio from URI:", uri);
+            console.log("ChatComponent.js:handleButtonClick: Playing audio from URI:", message.uri);
             setIsPlayingId(id);
-            player.replace({ uri: uri });
+            player.replace({ uri: message.uri });
             player.seekTo(0);
             player.play();
         }
     }
 
-    const addMessage = (text, morse, callsign, uri=null, isSendByMe=false, autoPlay=false) => {
-        console.log("Adding new message:", { text, morse, callsign, isSendByMe, uri, autoPlay });
+    /**
+     * Creates a new Message object and adds it to the messages list.
+     * @param {string} text: The content of the message in readable format.
+     * @param {string} morse: The content of the message in morse format {. - /}.
+     * @param {string} callsign: The callsign of the Sender, which is a 0 to 3 character long string.
+     * @param {string} uri: The path to the corresponding .wav file which contains teh message in audio format.
+     * @param {boolean} isSendByMe: Whether the message was send (true) or recieved (false).
+     * @param {boolean} autoPlay: Whether the messages should be played automatically.
+     */
+    function addMessage(text, morse, callsign, uri=null, isSendByMe=false, autoPlay=false) {
+        console.log("ChatComponent.js:addMessage: Adding new message:", { text, morse, callsign, isSendByMe, uri, autoPlay });
         setPlayLastMessage(autoPlay);
         const newMessage = {
             id: messages.length,
@@ -173,7 +204,7 @@ export default function ChatComponent() {
             text: text,
             uri: uri,
             morse: morse,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            time: new Date().toLocaleTimeString(["de-DE"], { hour: '2-digit', minute: '2-digit' }),
             isSendByMe: isSendByMe
         };
         setMessages(prevMessages => [...prevMessages, newMessage]);
