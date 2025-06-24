@@ -6,6 +6,7 @@ import { textToMorse, encodeMorse } from '../morse_util';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import learnWords from '../assets/data/learnwords.json';
+import styles from '../styles.js';
 
 export default function learn(){
     "use strict";
@@ -80,30 +81,30 @@ export default function learn(){
     return(
          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, padding: 20, paddingTop: 30, gap: 20 }}>
             <BackArrowComponent></BackArrowComponent>
-            <View style={styles.morse_box_container}>
-                <Text style={styles.info_text}>Morse to Decode:</Text>
-                <View style={styles.box_with_icon}>
-                    <Text style={styles.morse_text}>{morse}</Text>
-                    <Fontisto name="question" size={45} color={'black'} style={styles.icon}></Fontisto>
+            <View style={localStyles.morse_box_container}>
+                <Text style={localStyles.info_text}>Morse to Decode:</Text>
+                <View style={localStyles.box_with_icon}>
+                    <Text style={localStyles.morse_text}>{morse}</Text>
+                    <Fontisto name="question" size={45} color={'black'} style={localStyles.icon}></Fontisto>
                 </View>
             </View>
-            <View style={styles.morse_box_container}>
-                <Text style={styles.info_text}>Your Input:</Text>
-                <View style={styles.box_with_icon}>
-                    <Text style={styles.morse_text}>{textToMorse(textInput)}</Text>
-                    {!isCorrect && <AntDesign name="closecircleo" size={45} color={'black'} style={styles.icon}></AntDesign>}
-                    {isCorrect && <AntDesign name="checkcircleo" size={45} color={'black'} style={styles.icon}></AntDesign>}
+            <View style={localStyles.morse_box_container}>
+                <Text style={localStyles.info_text}>Your Input:</Text>
+                <View style={localStyles.box_with_icon}>
+                    <Text style={localStyles.morse_text}>{textToMorse(textInput)}</Text>
+                    {!isCorrect && <AntDesign name="closecircleo" size={45} color={'black'} style={localStyles.icon}></AntDesign>}
+                    {isCorrect && <AntDesign name="checkcircleo" size={45} color={'black'} style={localStyles.icon}></AntDesign>}
                 </View>
             </View>
-            <TextInput style={styles.input} value={textInput} onChangeText={setTextInput} ></TextInput>
-            <TouchableOpacity style={isCorrect ? styles.next_button : styles.next_button_disabled} disabled={!isCorrect} onPress={() => handleNextButton()}>
-                <Text style={styles.next_button_text}>Next</Text>
+            <TextInput style={localStyles.input} value={textInput} onChangeText={setTextInput} ></TextInput>
+            <TouchableOpacity style={[styles.button_body, isCorrect ? styles.button_body_enabled : styles.button_body_disabled]} disabled={!isCorrect} onPress={() => handleNextButton()}>
+                <Text style={[styles.button_text, isCorrect ? styles.button_text_enabled : styles.button_text_disabled]}>Next</Text>
             </TouchableOpacity>
         </KeyboardAvoidingView>
     )
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
     morse_box_container: {
         flexDirection: 'column'
     },
