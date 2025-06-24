@@ -33,9 +33,10 @@ export default function InputComponent({ addMessage }) {
 
     const handleEncodeMorse = async () => {
         try {
-            setEncodeText("");
+            if (encodeText.length === 0) { return; }
             const morse = await textToMorse(encodeText);
             addMessage(encodeText.trim().toUpperCase(), morse, "", null, true, true);
+            setEncodeText("");
         } catch (error) {
             console.error('Error converting to morse:', error);
         }
