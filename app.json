@@ -2,36 +2,57 @@
   "expo": {
     "name": "beepBeepBoop",
     "slug": "beepBeepBoop",
+    "scheme": "beepbeepboop",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/app_icons/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": {
+        "dark": "./assets/app_icons/ios-dark.png",
+        "light": "./assets/app_icons/ios-light.png"
+      },
+      "bundleIdentifier": "com.anonymous.beepBeepBoop"
     },
     "plugins": [
+      [
+        "@siteed/expo-audio-studio",
+        {}
+      ],
       [
         "expo-audio",
         {
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
         }
-      ]
+      ],
+      "expo-router"
     ],
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/app_icons/adaptive-icon.png",
+        "backgroundColor": "#1C2435"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.anonymous.beepBeepBoop"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "39015012-f5fa-48fe-9aac-671162d793ad"
+      }
     }
   }
 }
