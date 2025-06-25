@@ -74,6 +74,7 @@ export default function InputComponent({ addMessage }) {
 
     /**
      * First, requests permission to access the microphone. Then, starts the audio recording with a specified configuration.
+     * Based on: https://deeeed.github.io/expo-audio-stream/docs/hooks/use-audio-recorder/
      * @returns {Promise<void>}
      */
     const handleStart = async () => {
@@ -103,6 +104,7 @@ export default function InputComponent({ addMessage }) {
     /**
      * Handles stopping the audio recording and decoding the Morse code from the recording.
      * Displays a Snackbar message if no Morse code or text is decoded.
+     * Based on: https://deeeed.github.io/expo-audio-stream/docs/hooks/use-audio-recorder/
      * @returns {Promise<void>}
      */
     const handleStop = async () => {
