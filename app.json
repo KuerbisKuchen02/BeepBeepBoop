@@ -18,7 +18,8 @@
       "icon": {
         "dark": "./assets/app_icons/ios-dark.png",
         "light": "./assets/app_icons/ios-light.png"
-      }
+      },
+      "bundleIdentifier": "com.anonymous.beepBeepBoop"
     },
     "plugins": [
       [
@@ -40,8 +41,6 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],

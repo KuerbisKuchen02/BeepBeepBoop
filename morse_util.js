@@ -303,10 +303,11 @@ function trimSilence(samples, threshold = 0.5) {
         start++;
     }
 
-    // find the last sample above the threshold (backwards)
-    while (end > start && Math.abs(samples[end]) < threshold) {
-        end--;
-    }
+    // FIXME: Currently the last symbol is cut off most of the time
+    // // find the last sample above the threshold (backwards)
+    // while (end > start && Math.abs(samples[end]) < threshold) {
+    //     end--;
+    // }
 
     const trimmedLength = end - start + 1;
     if (trimmedLength <= 0) {
@@ -459,7 +460,7 @@ export async function decodeMorse(uri) {
         data = normalizeByPercentile(data);
         data = trimSilence(data);
         console.log("morse_util:decodeMorse: Trimmed PCM Data Length:", data.length);
-        createFileFromPCMAndShare(data, "final");
+        // createFileFromPCMAndShare(data, "final");
 
 
         const morse = getMorseSymbolsFromPcm(data, sampleRate);
